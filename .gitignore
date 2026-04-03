@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# RSA private key — never commit
+**/certs/private.pem

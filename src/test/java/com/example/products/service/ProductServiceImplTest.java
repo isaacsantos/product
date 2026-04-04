@@ -1,7 +1,9 @@
 package com.example.products.service;
 
 import com.example.products.exception.ProductNotFoundException;
+import com.example.products.model.ImageResponse;
 import com.example.products.model.Product;
+import com.example.products.model.ProductImage;
 import com.example.products.model.ProductRequest;
 import com.example.products.model.ProductResponse;
 import com.example.products.repository.ProductRepository;
@@ -167,5 +169,41 @@ class ProductServiceImplTest {
                 .hasMessageContaining("99");
 
         verify(repository, never()).deleteById(any());
+    }
+
+    // --- toResponse image mapping ---
+
+    @Test
+    void toResponse_mapsImagesCorrectlyWhenProductHasImages() {
+        ProductImage img1 = ProductImage.builder().id(10L).productId(1L).url("http://example.com/a.jpg").displayOrder(1).build();
+        ProductImage img2 = ProductImage.builder().id(11L).productId(1L).url("http://example.com/b.jpg").displayOrder(2).build();
+        product.getImages().addAll(List.of(img1, img2));
+
+        when(repository.findById(1L)).thenReturn(Optional.of(product));
+
+        ProductResponse response = service.findById(1L);
+
+        assertThat(response.getImages()).hasSize(2);
+
+        ImageResponse first = response.getImages().get(0);
+        assertThat(first.getId()).isEqualTo(10L);
+        assertThat(first.getProductId()).isEqualTo(1L);
+        assertThat(first.getUrl()).isEqualTo("http://example.com/a.jpg");
+        assertThat(first.getDisplayOrder()).isEqualTo(1);
+
+        ImageResponse second = response.getImages().get(1);
+        assertThat(second.getId()).isEqualTo(11L);
+        assertThat(second.getProductId()).isEqualTo(1L);
+        assertThat(second.getUrl()).isEqualTo("http://example.com/b.jpg");
+        assertThat(second.getDisplayOrder()).isEqualTo(2);
+    }
+
+    @Test
+    void toResponse_imagesIsEmptyWhenProductHasNoImages() {
+        when(repository.findById(1L)).thenReturn(Optional.of(product));
+
+        ProductResponse response = service.findById(1L);
+
+        assertThat(response.getImages()).isEmpty();
     }
 }

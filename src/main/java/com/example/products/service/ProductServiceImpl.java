@@ -1,6 +1,7 @@
 package com.example.products.service;
 
 import com.example.products.exception.ProductNotFoundException;
+import com.example.products.model.ImageResponse;
 import com.example.products.model.Product;
 import com.example.products.model.ProductRequest;
 import com.example.products.model.ProductResponse;
@@ -61,11 +62,20 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductResponse toResponse(Product product) {
+        List<ImageResponse> images = product.getImages().stream()
+                .map(img -> ImageResponse.builder()
+                        .id(img.getId())
+                        .productId(img.getProductId())
+                        .url(img.getUrl())
+                        .displayOrder(img.getDisplayOrder())
+                        .build())
+                .toList();
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
+                .images(images)
                 .build();
     }
 }

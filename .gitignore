@@ -34,3 +34,6 @@ build/
 
 # RSA private key — never commit
 **/certs/private.pem
+
+
+src/main/resources/import.csv

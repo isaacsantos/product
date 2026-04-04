@@ -7,6 +7,7 @@ import com.example.products.service.ProductImageService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class ProductImageController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<List<ImageResponse>> addImages(@PathVariable Long productId,
                                                          @Valid @RequestBody ImageRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productImageService.addImages(productId, request));
@@ -33,6 +35,7 @@ public class ProductImageController {
     }
 
     @PutMapping("/{imageId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ImageResponse> updateDisplayOrder(@PathVariable Long productId,
                                                             @PathVariable Long imageId,
                                                             @Valid @RequestBody DisplayOrderRequest request) {
@@ -40,6 +43,7 @@ public class ProductImageController {
     }
 
     @DeleteMapping("/{imageId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> deleteImage(@PathVariable Long productId,
                                             @PathVariable Long imageId) {
         productImageService.deleteImage(productId, imageId);

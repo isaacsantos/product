@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-alter-products-price-nullable
+      author: kiro
+      changes:
+        - dropNotNullConstraint:
+            tableName: products
+            columnName: price
+            columnDataType: NUMERIC(19, 2)

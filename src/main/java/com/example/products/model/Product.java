@@ -24,7 +24,6 @@ public class Product {
 
     private String description;
 
-    @Column(nullable = false)
     private BigDecimal price;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)

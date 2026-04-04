@@ -5,3 +5,6 @@ databaseChangeLog:
   - include:
       file: 002-create-product-images-table.yaml
       relativeToChangelogFile: true
+  - include:
+      file: 003-alter-products-price-nullable.yaml
+      relativeToChangelogFile: true

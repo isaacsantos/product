@@ -192,6 +192,29 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ImageResponse"
+  /api/products/import:
+    post:
+      tags:
+      - bulk-import-controller
+      operationId: importProducts
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
 components:
   schemas:
     DisplayOrderRequest:
@@ -230,7 +253,6 @@ components:
           minimum: 0.01
       required:
       - name
-      - price
     ProductResponse:
       type: object
       properties:

@@ -2,17 +2,21 @@ package com.example.products.service;
 
 import com.example.products.exception.ProductNotFoundException;
 import com.example.products.model.ImageResponse;
+import com.example.products.model.PageResponse;
 import com.example.products.model.Product;
 import com.example.products.model.ProductImage;
 import com.example.products.model.ProductRequest;
 import com.example.products.model.ProductResponse;
 import com.example.products.repository.ProductRepository;
+import com.example.products.repository.TagRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,6 +31,9 @@ class ProductServiceImplTest {
 
     @Mock
     private ProductRepository repository;
+
+    @Mock
+    private TagRepository tagRepository;
 
     @InjectMocks
     private ProductServiceImpl service;
@@ -82,20 +89,27 @@ class ProductServiceImplTest {
     @Test
     void findAll_returnsAllProductsMapped() {
         Product second = Product.builder().id(2L).name("Gadget").description(null).price(new BigDecimal("19.99")).build();
-        when(repository.findAll()).thenReturn(List.of(product, second));
+        when(repository.findAll(any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(List.of(product, second)));
 
-        List<ProductResponse> result = service.findAll();
+        PageResponse<ProductResponse> result = service.findAll(0, 20);
 
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getId()).isEqualTo(1L);
-        assertThat(result.get(1).getId()).isEqualTo(2L);
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getId()).isEqualTo(1L);
+        assertThat(result.getContent().get(1).getId()).isEqualTo(2L);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getTotalPages()).isEqualTo(1);
     }
 
     @Test
-    void findAll_returnsEmptyListWhenNoProducts() {
-        when(repository.findAll()).thenReturn(List.of());
+    void findAll_returnsEmptyPageWhenNoProducts() {
+        when(repository.findAll(any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(List.of()));
 
-        assertThat(service.findAll()).isEmpty();
+        PageResponse<ProductResponse> result = service.findAll(0, 20);
+
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isZero();
     }
 
     // --- findById ---

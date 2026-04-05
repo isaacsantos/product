@@ -1,7 +1,9 @@
 package com.example.products;
 
+import com.example.products.model.PageResponse;
 import com.example.products.model.ProductRequest;
 import com.example.products.model.ProductResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -11,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,6 +32,16 @@ class ProductCrudPropertyIT extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    private PageResponse<ProductResponse> getProductPage() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/products")
+                        .param("size", "10000"))
+                .andExpect(status().isOk())
+                .andReturn();
+        return objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<PageResponse<ProductResponse>>() {});
+    }
 
     static Stream<ProductRequest> validProductRequests() {
         return Stream.of(
@@ -255,11 +266,7 @@ class ProductCrudPropertyIT extends AbstractIntegrationTest {
     @MethodSource("invalidProductRequests")
     void invalidPostRequestRejectedWith400(ProductRequest invalidRequest) throws Exception {
         // Count products before
-        MvcResult beforeResult = mockMvc.perform(get("/api/products"))
-            .andExpect(status().isOk())
-            .andReturn();
-        List<?> before = objectMapper.readValue(beforeResult.getResponse().getContentAsString(), List.class);
-        int countBefore = before.size();
+        int countBefore = (int) getProductPage().getTotalElements();
 
         // POST with invalid payload — expect 400
         mockMvc.perform(post("/api/products")
@@ -268,11 +275,7 @@ class ProductCrudPropertyIT extends AbstractIntegrationTest {
             .andExpect(status().isBadRequest());
 
         // Count products after — should be unchanged
-        MvcResult afterResult = mockMvc.perform(get("/api/products"))
-            .andExpect(status().isOk())
-            .andReturn();
-        List<?> after = objectMapper.readValue(afterResult.getResponse().getContentAsString(), List.class);
-        assertThat(after.size()).isEqualTo(countBefore);
+        assertThat(getProductPage().getTotalElements()).isEqualTo(countBefore);
     }
 
     static Stream<Long> nonExistentIds() {
@@ -328,11 +331,7 @@ class ProductCrudPropertyIT extends AbstractIntegrationTest {
     @MethodSource("productCounts")
     void getAllReturnsCompleteList(int n) throws Exception {
         // Capture count before inserting
-        MvcResult beforeResult = mockMvc.perform(get("/api/products"))
-            .andExpect(status().isOk())
-            .andReturn();
-        List<?> before = objectMapper.readValue(beforeResult.getResponse().getContentAsString(), List.class);
-        int countBefore = before.size();
+        long countBefore = getProductPage().getTotalElements();
 
         // Insert N products
         for (int i = 0; i < n; i++) {
@@ -347,12 +346,8 @@ class ProductCrudPropertyIT extends AbstractIntegrationTest {
                 .andExpect(status().isCreated());
         }
 
-        // GET /api/products — assert length equals countBefore + N
-        MvcResult afterResult = mockMvc.perform(get("/api/products"))
-            .andExpect(status().isOk())
-            .andReturn();
-        List<?> after = objectMapper.readValue(afterResult.getResponse().getContentAsString(), List.class);
-        assertThat(after.size()).isEqualTo(countBefore + n);
+        // GET /api/products — assert totalElements equals countBefore + N
+        assertThat(getProductPage().getTotalElements()).isEqualTo(countBefore + n);
     }
 
     /**
@@ -386,11 +381,7 @@ class ProductCrudPropertyIT extends AbstractIntegrationTest {
         Long id = created.getId();
 
         // Count products before PUT
-        MvcResult beforeResult = mockMvc.perform(get("/api/products"))
-            .andExpect(status().isOk())
-            .andReturn();
-        List<?> before = objectMapper.readValue(beforeResult.getResponse().getContentAsString(), List.class);
-        int countBefore = before.size();
+        long countBefore = getProductPage().getTotalElements();
 
         // PUT with invalid payload — expect 400
         mockMvc.perform(put("/api/products/{id}", id)
@@ -411,10 +402,6 @@ class ProductCrudPropertyIT extends AbstractIntegrationTest {
         assertThat(retrieved.getPrice()).isEqualByComparingTo(valid.getPrice());
 
         // Product count should be unchanged
-        MvcResult afterResult = mockMvc.perform(get("/api/products"))
-            .andExpect(status().isOk())
-            .andReturn();
-        List<?> after = objectMapper.readValue(afterResult.getResponse().getContentAsString(), List.class);
-        assertThat(after.size()).isEqualTo(countBefore);
+        assertThat(getProductPage().getTotalElements()).isEqualTo(countBefore);
     }
 }

@@ -8,3 +8,15 @@ databaseChangeLog:
   - include:
       file: 003-alter-products-price-nullable.yaml
       relativeToChangelogFile: true
+  - include:
+      file: 004-create-tags-table.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 005-create-product-tag-table.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 006-insert-default-tags.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 007-update-tags-to-spanish.yaml
+      relativeToChangelogFile: true

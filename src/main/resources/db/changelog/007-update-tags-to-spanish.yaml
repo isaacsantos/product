@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-update-tags-to-spanish
+      author: kiro
+      changes:
+        - update:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Mamá
+            where: name='Mom'
+        - update:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Novia
+            where: name='Girlfriend'
+        - update:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Esposa
+            where: name='Wife'
+        - update:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Amigo
+            where: name='Friend'
+        - update:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Aniversario
+            where: name='Anniversary'
+        - update:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Cumpleaños
+            where: name='Birthday'

@@ -1,22 +1,28 @@
 package com.example.products.service;
 
 import com.example.products.exception.ProductNotFoundException;
-import com.example.products.model.ImageResponse;
-import com.example.products.model.Product;
-import com.example.products.model.ProductRequest;
-import com.example.products.model.ProductResponse;
+import com.example.products.exception.TagNotFoundException;
+import com.example.products.model.*;
 import com.example.products.repository.ProductRepository;
+import com.example.products.repository.TagRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
+    private final TagRepository tagRepository;
 
-    public ProductServiceImpl(ProductRepository repository) {
+    public ProductServiceImpl(ProductRepository repository, TagRepository tagRepository) {
         this.repository = repository;
+        this.tagRepository = tagRepository;
     }
 
     @Override
@@ -30,10 +36,20 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> findAll() {
-        return repository.findAll().stream()
+    public PageResponse<ProductResponse> findAll(int page, int size) {
+        Page<Product> result = repository.findAll(PageRequest.of(page, size));
+        List<ProductResponse> content = result.getContent().stream()
                 .map(this::toResponse)
                 .toList();
+        return PageResponse.<ProductResponse>builder()
+                .content(content)
+                .page(result.getNumber())
+                .size(result.getSize())
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .first(result.isFirst())
+                .last(result.isLast())
+                .build();
     }
 
     @Override
@@ -61,6 +77,23 @@ public class ProductServiceImpl implements ProductService {
         repository.deleteById(id);
     }
 
+    @Override
+    @Transactional
+    public ProductResponse setTags(Long productId, Set<Long> tagIds) {
+        Product product = repository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+
+        Set<Tag> tags = new HashSet<>();
+        for (Long tagId : tagIds) {
+            Tag tag = tagRepository.findById(tagId)
+                    .orElseThrow(() -> new TagNotFoundException(tagId));
+            tags.add(tag);
+        }
+
+        product.setTags(tags);
+        return toResponse(repository.save(product));
+    }
+
     private ProductResponse toResponse(Product product) {
         List<ImageResponse> images = product.getImages().stream()
                 .map(img -> ImageResponse.builder()
@@ -70,12 +103,18 @@ public class ProductServiceImpl implements ProductService {
                         .displayOrder(img.getDisplayOrder())
                         .build())
                 .toList();
+
+        List<TagResponse> tags = product.getTags().stream()
+                .map(tag -> TagResponse.builder().id(tag.getId()).name(tag.getName()).build())
+                .toList();
+
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .images(images)
+                .tags(tags)
                 .build();
     }
 }

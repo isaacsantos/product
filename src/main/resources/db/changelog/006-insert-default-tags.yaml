@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-insert-default-tags
+      author: kiro
+      changes:
+        - insert:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Mom
+        - insert:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Girlfriend
+        - insert:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Wife
+        - insert:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Friend
+        - insert:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Anniversary
+        - insert:
+            tableName: tags
+            columns:
+              - column:
+                  name: name
+                  value: Birthday

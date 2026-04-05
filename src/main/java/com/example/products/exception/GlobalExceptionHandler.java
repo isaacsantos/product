@@ -1,5 +1,6 @@
 package com.example.products.exception;
 
+import com.example.products.exception.TagNotFoundException;
 import com.example.products.model.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ProductImageNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleProductImageNotFound(ProductImageNotFoundException ex) {
+        ErrorResponse body = ErrorResponse.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .timestamp(Instant.now())
+                .build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(TagNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleTagNotFound(TagNotFoundException ex) {
         ErrorResponse body = ErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND.value())
                 .message(ex.getMessage())

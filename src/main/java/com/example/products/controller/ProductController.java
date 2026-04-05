@@ -1,5 +1,6 @@
 package com.example.products.controller;
 
+import com.example.products.model.PageResponse;
 import com.example.products.model.ProductRequest;
 import com.example.products.model.ProductResponse;
 import com.example.products.service.ProductService;
@@ -9,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/products")
@@ -28,8 +29,10 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponse>> findAll() {
-        return ResponseEntity.ok(productService.findAll());
+    public ResponseEntity<PageResponse<ProductResponse>> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(productService.findAll(page, size));
     }
 
     @GetMapping("/{id}")
@@ -49,5 +52,12 @@ public class ProductController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/tags")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ProductResponse> setTags(@PathVariable Long id,
+                                                   @RequestBody Set<Long> tagIds) {
+        return ResponseEntity.ok(productService.setTags(id, tagIds));
     }
 }

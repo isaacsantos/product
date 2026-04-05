@@ -19,4 +19,7 @@ public class ProductResponse {
 
     @Builder.Default
     private List<ImageResponse> images = new ArrayList<>();
+
+    @Builder.Default
+    private List<TagResponse> tags = new ArrayList<>();
 }

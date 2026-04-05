@@ -92,7 +92,7 @@ class ProductServiceImplTest {
         when(repository.findAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(product, second)));
 
-        PageResponse<ProductResponse> result = service.findAll(0, 20);
+        PageResponse<ProductResponse> result = service.findAll(0, 20, null);
 
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).getId()).isEqualTo(1L);
@@ -106,7 +106,7 @@ class ProductServiceImplTest {
         when(repository.findAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        PageResponse<ProductResponse> result = service.findAll(0, 20);
+        PageResponse<ProductResponse> result = service.findAll(0, 20, null);
 
         assertThat(result.getContent()).isEmpty();
         assertThat(result.getTotalElements()).isZero();

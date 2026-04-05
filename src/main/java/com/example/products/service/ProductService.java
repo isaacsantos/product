@@ -10,7 +10,7 @@ public interface ProductService {
 
     ProductResponse create(ProductRequest request);
 
-    PageResponse<ProductResponse> findAll(int page, int size);
+    PageResponse<ProductResponse> findAll(int page, int size, Set<Long> tagIds);
 
     ProductResponse findById(Long id);
 

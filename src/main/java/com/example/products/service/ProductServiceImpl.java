@@ -36,8 +36,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public PageResponse<ProductResponse> findAll(int page, int size) {
-        Page<Product> result = repository.findAll(PageRequest.of(page, size));
+    public PageResponse<ProductResponse> findAll(int page, int size, Set<Long> tagIds) {
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<Product> result = (tagIds == null || tagIds.isEmpty())
+                ? repository.findAll(pageable)
+                : repository.findByTagIds(tagIds, pageable);
         List<ProductResponse> content = result.getContent().stream()
                 .map(this::toResponse)
                 .toList();

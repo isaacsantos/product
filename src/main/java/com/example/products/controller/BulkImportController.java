@@ -16,7 +16,7 @@ import java.io.InputStreamReader;
 import java.time.Instant;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/admin/api/products")
 public class BulkImportController {
 
     private final BulkImportService bulkImportService;

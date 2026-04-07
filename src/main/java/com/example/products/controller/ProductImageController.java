@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products/{productId}/images")
+@RequestMapping("/admin/api/products/{productId}/images")
 public class ProductImageController {
 
     private final ProductImageService productImageService;

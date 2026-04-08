@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(BulkImportController.class)
 @Import({SecurityConfig.class, BulkImportControllerTest.TestConfig.class})
 @TestPropertySource(properties = {
-        "spring.security.oauth2.resourceserver.jwt.public-key-location=classpath:certs/public.pem",
+        "firebase.project-id=test-project",
         "security.cors.allowed-origins=http://localhost:3000"
 })
 class BulkImportControllerTest {
@@ -43,9 +44,12 @@ class BulkImportControllerTest {
     MockMvc mockMvc;
 
     @MockitoBean
+    JwtDecoder jwtDecoder;
+
+    @MockitoBean
     BulkImportService bulkImportService;
 
-    private static final String IMPORT_URL = "/api/products/import";
+    private static final String IMPORT_URL = "/admin/api/products/import";
 
     private MockMultipartFile validCsvFile() {
         return new MockMultipartFile("file", "import.csv", "text/csv",

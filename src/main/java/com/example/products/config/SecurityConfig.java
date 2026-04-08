@@ -11,7 +11,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimNames;
+import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,8 +26,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.security.interfaces.RSAPublicKey;
-import java.util.Collection;
 import java.util.List;
 
 @Configuration
@@ -42,7 +47,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-                .requestMatchers("/admin/api/**").hasRole("ADMIN")
+                .requestMatchers("/admin/api/**").hasAnyRole("ADMIN", "MANAGER")
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
@@ -66,10 +71,20 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(
-            @Value("${spring.security.oauth2.resourceserver.jwt.public-key-location}")
-            RSAPublicKey publicKey) {
-        return NimbusJwtDecoder.withPublicKey(publicKey).build();
+    public JwtDecoder jwtDecoder(@Value("${firebase.project-id}") String projectId) {
+        String jwksUri = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
+        String issuer  = "https://securetoken.google.com/" + projectId;
+
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwksUri).build();
+
+        OAuth2TokenValidator<Jwt> issuerValidator   = new JwtIssuerValidator(issuer);
+        OAuth2TokenValidator<Jwt> audienceValidator = new JwtClaimValidator<>(
+                JwtClaimNames.AUD, aud -> aud != null && ((List<?>) aud).contains(projectId));
+        OAuth2TokenValidator<Jwt> combined = new DelegatingOAuth2TokenValidator<>(
+                JwtValidators.createDefault(), issuerValidator, audienceValidator);
+
+        decoder.setJwtValidator(combined);
+        return decoder;
     }
 
     @Bean

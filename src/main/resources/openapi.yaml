@@ -200,6 +200,24 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ProductResponse"
+  /admin/api/users:
+    post:
+      tags:
+      - user-management-controller
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
   /admin/api/users/{uid}/roles:
     post:
       tags:
@@ -537,6 +555,37 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TagResponse"
+    CreateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+        displayName:
+          type: string
+          maxLength: 256
+          minLength: 0
+        roles:
+          type: array
+          items:
+            type: string
+      required:
+      - email
+    UserResponse:
+      type: object
+      properties:
+        uid:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
     RoleRequest:
       type: object
       properties:

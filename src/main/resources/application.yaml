@@ -23,3 +23,4 @@ security:
       - "http://localhost:5173"
       - "https://flower-store-cnik.onrender.com"
       - "https://www.eljardindecasablanca.shop"
+      - "https://eljardindecasablanca.shop"

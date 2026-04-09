@@ -1,5 +1,7 @@
 package com.example.products.exception;
 
+import com.example.products.exception.CloudinaryUploadException;
+import com.example.products.exception.InvalidImageTypeException;
 import com.example.products.exception.TagNotFoundException;
 import com.example.products.model.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -121,6 +123,26 @@ public class GlobalExceptionHandler {
                 .timestamp(Instant.now())
                 .build();
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
+
+    @ExceptionHandler(InvalidImageTypeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidImageType(InvalidImageTypeException ex) {
+        ErrorResponse body = ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .timestamp(Instant.now())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(CloudinaryUploadException.class)
+    public ResponseEntity<ErrorResponse> handleCloudinaryUpload(CloudinaryUploadException ex) {
+        ErrorResponse body = ErrorResponse.builder()
+                .status(HttpStatus.BAD_GATEWAY.value())
+                .message("Cloudinary upload failed")
+                .timestamp(Instant.now())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(body);
     }
 
     @ExceptionHandler(Exception.class)

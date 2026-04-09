@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-add-cloudinary-public-id-to-product-images
+      author: kiro
+      changes:
+        - addColumn:
+            tableName: product_images
+            columns:
+              - column:
+                  name: cloudinary_public_id
+                  type: TEXT
+                  constraints:
+                    nullable: true

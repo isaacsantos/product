@@ -27,4 +27,7 @@ public class ProductImage {
 
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
+
+    @Column(name = "cloudinary_public_id")
+    private String cloudinaryPublicId;
 }

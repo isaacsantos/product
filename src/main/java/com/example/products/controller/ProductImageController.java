@@ -6,9 +6,11 @@ import com.example.products.model.ImageResponse;
 import com.example.products.service.ProductImageService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -27,6 +29,13 @@ public class ProductImageController {
     public ResponseEntity<List<ImageResponse>> addImages(@PathVariable Long productId,
                                                          @Valid @RequestBody ImageRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productImageService.addImages(productId, request));
+    }
+
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<List<ImageResponse>> uploadImages(@PathVariable Long productId,
+                                                            @RequestParam("files") List<MultipartFile> files) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productImageService.uploadImages(productId, files));
     }
 
     @GetMapping

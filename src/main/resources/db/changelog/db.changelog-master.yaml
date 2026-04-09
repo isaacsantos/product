@@ -23,3 +23,6 @@ databaseChangeLog:
   - include:
       file: 008-add-product-active-column.yaml
       relativeToChangelogFile: true
+  - include:
+      file: 009-add-cloudinary-public-id-to-product-images.yaml
+      relativeToChangelogFile: true

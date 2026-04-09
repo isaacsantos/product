@@ -29,14 +29,15 @@ class BulkImportServiceImplTest {
     @InjectMocks
     private BulkImportServiceImpl service;
 
-    private ProductResponse mockProductResponse;
+    private AdminProductResponse mockProductResponse;
 
     @BeforeEach
     void setUp() {
-        mockProductResponse = ProductResponse.builder()
+        mockProductResponse = AdminProductResponse.builder()
                 .id(42L)
                 .name("Widget")
                 .price(new BigDecimal("9.99"))
+                .active(true)
                 .build();
     }
 
@@ -44,7 +45,7 @@ class BulkImportServiceImplTest {
 
     @Test
     void singleValidRow_callsCreateAndAddImages_returnsSuccess() throws IOException {
-        when(productService.create(any())).thenReturn(mockProductResponse);
+        when(productService.createAdmin(any())).thenReturn(mockProductResponse);
 
         MockMultipartFile file = csv("Widget,A widget,9.99,https://example.com/img.jpg");
         ImportResult result = service.importProducts(file);
@@ -58,7 +59,7 @@ class BulkImportServiceImplTest {
         assertThat(row.getProductId()).isEqualTo(42L);
         assertThat(row.getRowNumber()).isEqualTo(1);
 
-        verify(productService).create(argThat(req ->
+        verify(productService).createAdmin(argThat(req ->
                 "Widget".equals(req.getName()) &&
                 new BigDecimal("9.99").compareTo(req.getPrice()) == 0
         ));
@@ -69,13 +70,13 @@ class BulkImportServiceImplTest {
 
     @Test
     void blankDescription_treatedAsValid_passedAsEmptyString() throws IOException {
-        when(productService.create(any())).thenReturn(mockProductResponse);
+        when(productService.createAdmin(any())).thenReturn(mockProductResponse);
 
         MockMultipartFile file = csv("Widget,,9.99,https://example.com/img.jpg");
         ImportResult result = service.importProducts(file);
 
         assertThat(result.getSuccessCount()).isEqualTo(1);
-        verify(productService).create(argThat(req ->
+        verify(productService).createAdmin(argThat(req ->
                 req.getDescription() == null || req.getDescription().isEmpty()
         ));
     }
@@ -84,7 +85,7 @@ class BulkImportServiceImplTest {
 
     @Test
     void threeColumns_returnsFailed_processingContinues() throws IOException {
-        when(productService.create(any())).thenReturn(mockProductResponse);
+        when(productService.createAdmin(any())).thenReturn(mockProductResponse);
 
         MockMultipartFile file = csv("bad,row,only\nWidget,desc,9.99,https://example.com/img.jpg");
         ImportResult result = service.importProducts(file);
@@ -98,7 +99,7 @@ class BulkImportServiceImplTest {
 
     @Test
     void fiveColumns_returnsFailed_processingContinues() throws IOException {
-        when(productService.create(any())).thenReturn(mockProductResponse);
+        when(productService.createAdmin(any())).thenReturn(mockProductResponse);
 
         MockMultipartFile file = csv("a,b,c,d,e\nWidget,desc,9.99,https://example.com/img.jpg");
         ImportResult result = service.importProducts(file);
@@ -111,7 +112,7 @@ class BulkImportServiceImplTest {
 
     @Test
     void blankName_returnsFailed_processingContinues() throws IOException {
-        when(productService.create(any())).thenReturn(mockProductResponse);
+        when(productService.createAdmin(any())).thenReturn(mockProductResponse);
 
         MockMultipartFile file = csv("  ,desc,9.99,https://example.com/img.jpg\nWidget,desc,9.99,https://example.com/img.jpg");
         ImportResult result = service.importProducts(file);
@@ -177,7 +178,7 @@ class BulkImportServiceImplTest {
 
     @Test
     void productServiceThrows_rowFailed_nextRowStillProcessed() throws IOException {
-        when(productService.create(any()))
+        when(productService.createAdmin(any()))
                 .thenThrow(new RuntimeException("DB error"))
                 .thenReturn(mockProductResponse);
 
@@ -190,7 +191,7 @@ class BulkImportServiceImplTest {
 
     @Test
     void productImageServiceThrows_rowFailed_nextRowStillProcessed() throws IOException {
-        when(productService.create(any())).thenReturn(mockProductResponse);
+        when(productService.createAdmin(any())).thenReturn(mockProductResponse);
         when(productImageService.addImages(anyLong(), any()))
                 .thenThrow(new RuntimeException("Image error"))
                 .thenReturn(List.of());
@@ -206,7 +207,7 @@ class BulkImportServiceImplTest {
 
     @Test
     void summaryInvariant_totalRowsEqualsSumOfSuccessAndFailed() throws IOException {
-        when(productService.create(any())).thenReturn(mockProductResponse);
+        when(productService.createAdmin(any())).thenReturn(mockProductResponse);
 
         MockMultipartFile file = csv(
                 "Widget,desc,9.99,https://example.com/img.jpg\n" +
@@ -222,7 +223,7 @@ class BulkImportServiceImplTest {
 
     @Test
     void rowNumbers_areOneBased_andMatchCsvLinePosition() throws IOException {
-        when(productService.create(any())).thenReturn(mockProductResponse);
+        when(productService.createAdmin(any())).thenReturn(mockProductResponse);
 
         MockMultipartFile file = csv(
                 "Widget,desc,9.99,https://example.com/img.jpg\n" +

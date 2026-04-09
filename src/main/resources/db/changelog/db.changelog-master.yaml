@@ -20,3 +20,6 @@ databaseChangeLog:
   - include:
       file: 007-update-tags-to-spanish.yaml
       relativeToChangelogFile: true
+  - include:
+      file: 008-add-product-active-column.yaml
+      relativeToChangelogFile: true

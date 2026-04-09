@@ -7,6 +7,7 @@ import com.example.products.model.Product;
 import com.example.products.model.ProductImage;
 import com.example.products.model.ProductRequest;
 import com.example.products.model.ProductResponse;
+import com.example.products.model.PublicProductResponse;
 import com.example.products.repository.ProductRepository;
 import com.example.products.repository.TagRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,7 +93,7 @@ class ProductServiceImplTest {
         when(repository.findAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(product, second)));
 
-        PageResponse<ProductResponse> result = service.findAll(0, 20, null);
+        PageResponse<PublicProductResponse> result = service.findAll(0, 20, null);
 
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).getId()).isEqualTo(1L);
@@ -106,7 +107,7 @@ class ProductServiceImplTest {
         when(repository.findAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        PageResponse<ProductResponse> result = service.findAll(0, 20, null);
+        PageResponse<PublicProductResponse> result = service.findAll(0, 20, null);
 
         assertThat(result.getContent()).isEmpty();
         assertThat(result.getTotalElements()).isZero();
@@ -118,7 +119,7 @@ class ProductServiceImplTest {
     void findById_returnsProductWhenFound() {
         when(repository.findById(1L)).thenReturn(Optional.of(product));
 
-        ProductResponse response = service.findById(1L);
+        PublicProductResponse response = service.findById(1L);
 
         assertThat(response.getId()).isEqualTo(1L);
         assertThat(response.getName()).isEqualTo("Widget");
@@ -195,7 +196,7 @@ class ProductServiceImplTest {
 
         when(repository.findById(1L)).thenReturn(Optional.of(product));
 
-        ProductResponse response = service.findById(1L);
+        PublicProductResponse response = service.findById(1L);
 
         assertThat(response.getImages()).hasSize(2);
 
@@ -216,7 +217,7 @@ class ProductServiceImplTest {
     void toResponse_imagesIsEmptyWhenProductHasNoImages() {
         when(repository.findById(1L)).thenReturn(Optional.of(product));
 
-        ProductResponse response = service.findById(1L);
+        PublicProductResponse response = service.findById(1L);
 
         assertThat(response.getImages()).isEmpty();
     }

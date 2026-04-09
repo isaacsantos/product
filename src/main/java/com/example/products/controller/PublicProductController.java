@@ -1,7 +1,7 @@
 package com.example.products.controller;
 
 import com.example.products.model.PageResponse;
-import com.example.products.model.ProductResponse;
+import com.example.products.model.PublicProductResponse;
 import com.example.products.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +19,7 @@ public class PublicProductController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponse<ProductResponse>> findAll(
+    public ResponseEntity<PageResponse<PublicProductResponse>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) Set<Long> tagIds) {
@@ -27,7 +27,7 @@ public class PublicProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<PublicProductResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.findById(id));
     }
 }

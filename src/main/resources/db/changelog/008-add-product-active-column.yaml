@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-add-product-active-column
+      author: kiro
+      changes:
+        - addColumn:
+            tableName: products
+            columns:
+              - column:
+                  name: active
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+                  defaultValueBoolean: true
+  - changeSet:
+      id: 008-set-existing-products-active
+      author: kiro
+      changes:
+        - update:
+            tableName: products
+            columns:
+              - column:
+                  name: active
+                  valueBoolean: true

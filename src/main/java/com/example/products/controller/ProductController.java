@@ -1,5 +1,6 @@
 package com.example.products.controller;
 
+import com.example.products.model.AdminProductResponse;
 import com.example.products.model.PageResponse;
 import com.example.products.model.ProductRequest;
 import com.example.products.model.ProductResponse;
@@ -24,28 +25,28 @@ public class ProductController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ProductResponse> create(@Valid @RequestBody ProductRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(request));
+    public ResponseEntity<AdminProductResponse> create(@Valid @RequestBody ProductRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.createAdmin(request));
     }
 
     @GetMapping
-    public ResponseEntity<PageResponse<ProductResponse>> findAll(
+    public ResponseEntity<PageResponse<AdminProductResponse>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) Set<Long> tagIds) {
-        return ResponseEntity.ok(productService.findAll(page, size, tagIds));
+        return ResponseEntity.ok(productService.findAllAdmin(page, size, tagIds));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponse> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.findById(id));
+    public ResponseEntity<AdminProductResponse> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.findByIdAdmin(id));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ProductResponse> update(@PathVariable Long id,
+    public ResponseEntity<AdminProductResponse> update(@PathVariable Long id,
                                                   @Valid @RequestBody ProductRequest request) {
-        return ResponseEntity.ok(productService.update(id, request));
+        return ResponseEntity.ok(productService.updateAdmin(id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -57,8 +58,8 @@ public class ProductController {
 
     @PutMapping("/{id}/tags")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ProductResponse> setTags(@PathVariable Long id,
+    public ResponseEntity<AdminProductResponse> setTags(@PathVariable Long id,
                                                    @RequestBody Set<Long> tagIds) {
-        return ResponseEntity.ok(productService.setTags(id, tagIds));
+        return ResponseEntity.ok(productService.setTagsAdmin(id, tagIds));
     }
 }

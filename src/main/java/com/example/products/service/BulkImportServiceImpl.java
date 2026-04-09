@@ -86,9 +86,9 @@ public class BulkImportServiceImpl implements BulkImportService {
                 .price(price)
                 .build();
 
-        ProductResponse productResponse;
+        AdminProductResponse productResponse;
         try {
-            productResponse = productService.create(productRequest);
+            productResponse = productService.createAdmin(productRequest);
         } catch (Exception e) {
             return failed(rowNumber, "Failed to create product: " + e.getMessage());
         }

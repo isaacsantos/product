@@ -41,4 +41,8 @@ public class Product {
     )
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
 }

@@ -1,25 +1,25 @@
 package com.example.products.model;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductRequest {
+public class PublicProductResponse {
 
-    @NotBlank
+    private Long id;
     private String name;
-
     private String description;
-
-    @DecimalMin("0.01")
     private BigDecimal price;
 
     @Builder.Default
-    private boolean active = true;
+    private List<ImageResponse> images = new ArrayList<>();
+
+    @Builder.Default
+    private List<TagResponse> tags = new ArrayList<>();
 }

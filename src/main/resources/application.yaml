@@ -14,13 +14,3 @@ spring:
       ddl-auto: none
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
-
-security:
-  cors:
-    allowed-origins:
-      - "http://localhost:3000"
-      - "http://localhost:8080"
-      - "http://localhost:5173"
-      - "https://flower-store-cnik.onrender.com"
-      - "https://www.eljardindecasablanca.shop"
-      - "https://eljardindecasablanca.shop"

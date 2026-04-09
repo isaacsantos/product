@@ -74,6 +74,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public PublicProductResponse findById(Long id) {
         return repository.findById(id)
+                .filter(Product::isActive)
                 .map(this::toPublicResponse)
                 .orElseThrow(() -> new ProductNotFoundException(id));
     }
@@ -82,8 +83,8 @@ public class ProductServiceImpl implements ProductService {
     public PageResponse<PublicProductResponse> findAll(int page, int size, Set<Long> tagIds) {
         PageRequest pageable = PageRequest.of(page, size);
         Page<Product> result = (tagIds == null || tagIds.isEmpty())
-                ? repository.findAll(pageable)
-                : repository.findByTagIds(tagIds, pageable);
+                ? repository.findByActiveTrue(pageable)
+                : repository.findActiveByTagIds(tagIds, pageable);
         List<PublicProductResponse> content = result.getContent().stream()
                 .map(this::toPublicResponse)
                 .toList();

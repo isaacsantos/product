@@ -13,4 +13,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT DISTINCT p FROM Product p JOIN p.tags t WHERE t.id IN :tagIds")
     Page<Product> findByTagIds(@Param("tagIds") Collection<Long> tagIds, Pageable pageable);
+
+    Page<Product> findByActiveTrue(Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Product p JOIN p.tags t WHERE t.id IN :tagIds AND p.active = true")
+    Page<Product> findActiveByTagIds(@Param("tagIds") Collection<Long> tagIds, Pageable pageable);
 }

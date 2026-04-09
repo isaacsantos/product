@@ -18,10 +18,10 @@ spring:
 security:
   cors:
     allowed-origins:
-      - "http://localhost:3000"
-      - "http://localhost:8080"
       - "http://localhost:5173"
       - "https://flower-store-cnik.onrender.com"
+      - "https://eljardindecasablanca.shop/"
+      - "https://eljardindecasablanca.shop"
 
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME}

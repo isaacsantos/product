@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
+@org.springframework.scheduling.annotation.EnableAsync
 public class ProductsApplication {
 
     public static void main(String[] args) {

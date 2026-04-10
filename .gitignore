@@ -32,10 +32,13 @@ build/
 ### VS Code ###
 .vscode/
 
+### macOS ###
+.DS_Store
+
 # RSA private key — never commit
 **/certs/private.pem
 
 
 src/main/resources/import.csv
 
-src/main/resources/google/jardindecasablanca-firebase-adminsdk-fbsvc-45ef4bef91.json
+src/main/resources/google/*

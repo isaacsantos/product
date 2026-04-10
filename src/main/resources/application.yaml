@@ -22,6 +22,9 @@ security:
       - "https://flower-store-cnik.onrender.com"
       - "https://eljardindecasablanca.shop/"
       - "https://eljardindecasablanca.shop"
+      - "https://game-store-58h9.onrender.com"
+      - "https://game-store-58h9.onrender.com/"
+
 
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME}

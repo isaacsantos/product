@@ -5,8 +5,8 @@ spring:
   application:
     name: products
   datasource:
-    url: jdbc:postgresql://dpg-d77qu9ruibrs73c55jd0-a.oregon-postgres.render.com/garden_3k71
-    username: garden_3k71_user
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:

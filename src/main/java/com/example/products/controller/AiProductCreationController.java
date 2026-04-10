@@ -1,6 +1,7 @@
 package com.example.products.controller;
 
 import com.example.products.model.ErrorResponse;
+import com.example.products.model.InMemoryFile;
 import com.example.products.service.AiProductCreationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,24 @@ public class AiProductCreationController {
             return badRequest("At least one image file is required");
         }
 
-        aiProductCreationService.createProductsFromImages(files);
+        // Read bytes into memory before returning response,
+        // because temp files are cleaned up after the request completes
+        List<InMemoryFile> inMemoryFiles;
+        try {
+            inMemoryFiles = files.stream()
+                    .map(f -> {
+                        try {
+                            return new InMemoryFile(f.getOriginalFilename(), f.getContentType(), f.getBytes());
+                        } catch (IOException e) {
+                            throw new RuntimeException("Failed to read uploaded file", e);
+                        }
+                    })
+                    .toList();
+        } catch (RuntimeException e) {
+            return badRequest("Failed to read uploaded files: " + e.getMessage());
+        }
+
+        aiProductCreationService.createProductsFromImages(inMemoryFiles);
 
         return ResponseEntity.accepted().body(Map.of(
                 "message", "Processing started. Products will be created in the background as inactive.",

@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -24,13 +23,13 @@ public class AiProductCreationServiceImpl implements AiProductCreationService {
     @Override
     @Async
     @Transactional
-    public void createProductsFromImages(List<MultipartFile> files) {
+    public void createProductsFromImages(List<InMemoryFile> files) {
         try {
             log.info("Starting async AI product creation for {} images", files.size());
 
             // 1. Upload all images to Cloudinary
             List<CloudinaryUploadResult> uploadResults = files.stream()
-                    .map(cloudinaryService::upload)
+                    .map(f -> cloudinaryService.upload(f.getBytes(), f.getContentType()))
                     .toList();
 
             List<String> imageUrls = uploadResults.stream()

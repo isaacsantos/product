@@ -54,6 +54,22 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     }
 
     @Override
+    public CloudinaryUploadResult upload(byte[] bytes, String contentType) {
+        if (!ALLOWED_TYPES.contains(contentType)) {
+            throw new InvalidImageTypeException(contentType);
+        }
+        try {
+            Map result = cloudinary.uploader().upload(bytes, ObjectUtils.emptyMap());
+            return new CloudinaryUploadResult(
+                    (String) result.get("secure_url"),
+                    (String) result.get("public_id")
+            );
+        } catch (IOException e) {
+            throw new CloudinaryUploadException("Cloudinary upload failed", e);
+        }
+    }
+
+    @Override
     public void delete(String publicId) {
         try {
             cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());

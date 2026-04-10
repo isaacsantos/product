@@ -21,6 +21,9 @@ public class Tag {
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
+    @Column(length = 100)
+    private String type;
+
     @ManyToMany(mappedBy = "tags")
     @Builder.Default
     @ToString.Exclude

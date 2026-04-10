@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-add-type-to-tags
+      author: kiro
+      changes:
+        - addColumn:
+            tableName: tags
+            columns:
+              - column:
+                  name: type
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: true

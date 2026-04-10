@@ -20,7 +20,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public TagResponse create(TagRequest request) {
-        Tag tag = Tag.builder().name(request.getName()).build();
+        Tag tag = Tag.builder().name(request.getName()).type(request.getType()).build();
         return toResponse(repository.save(tag));
     }
 
@@ -40,6 +40,7 @@ public class TagServiceImpl implements TagService {
     public TagResponse update(Long id, TagRequest request) {
         Tag tag = repository.findById(id).orElseThrow(() -> new TagNotFoundException(id));
         tag.setName(request.getName());
+        tag.setType(request.getType());
         return toResponse(repository.save(tag));
     }
 
@@ -52,6 +53,6 @@ public class TagServiceImpl implements TagService {
     }
 
     TagResponse toResponse(Tag tag) {
-        return TagResponse.builder().id(tag.getId()).name(tag.getName()).build();
+        return TagResponse.builder().id(tag.getId()).name(tag.getName()).type(tag.getType()).build();
     }
 }

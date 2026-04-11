@@ -4,6 +4,10 @@ firebase:
 spring:
   application:
     name: products
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}

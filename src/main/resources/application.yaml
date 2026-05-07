@@ -37,7 +37,14 @@ cloudinary:
 
 gemini:
   api-key: ${GEMINI_API_KEY}
-  model: ${GEMINI_MODEL}
+  model: ${GEMINI_MODEL:gemini-2.5-flash}
+
+openai:
+  api-key: ${OPENAI_API_KEY}
+  model: ${OPENAI_MODEL:gpt-4o-mini}
+
+ai:
+  provider: ${AI_PROVIDER:gemini}
 
 springdoc:
   api-docs:

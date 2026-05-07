@@ -5,6 +5,6 @@ import com.example.products.model.TagResponse;
 
 import java.util.List;
 
-public interface GeminiService {
+public interface AiVisionService {
     List<AiClassifiedProduct> classifyImages(List<String> imageUrls, List<TagResponse> availableTags);
 }

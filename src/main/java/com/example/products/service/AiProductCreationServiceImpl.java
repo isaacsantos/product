@@ -15,7 +15,7 @@ import java.util.*;
 public class AiProductCreationServiceImpl implements AiProductCreationService {
 
     private final CloudinaryService cloudinaryService;
-    private final GeminiService geminiService;
+    private final AiVisionService aiVisionService;
     private final ProductService productService;
     private final ProductImageService productImageService;
     private final TagService tagService;
@@ -36,12 +36,17 @@ public class AiProductCreationServiceImpl implements AiProductCreationService {
                     .map(CloudinaryUploadResult::url)
                     .toList();
 
+            // Generate low-res URLs for AI analysis (saves tokens/quota)
+            List<String> lowResUrls = imageUrls.stream()
+                    .map(this::toLowResUrl)
+                    .toList();
+
             // 2. Get available tags
             List<TagResponse> availableTags = tagService.findAll();
 
-            // 3. Ask Gemini to classify images
-            log.info("Classifying {} images with Gemini AI", imageUrls.size());
-            List<AiClassifiedProduct> classifiedProducts = geminiService.classifyImages(imageUrls, availableTags);
+            // 3. Ask AI to classify images (using low-res versions)
+            log.info("Classifying {} images with AI vision service", imageUrls.size());
+            List<AiClassifiedProduct> classifiedProducts = aiVisionService.classifyImages(lowResUrls, availableTags);
 
             // 4. Create products as INACTIVE with price = null
             log.info("Creating {} products from AI classification", classifiedProducts.size());
@@ -71,5 +76,21 @@ public class AiProductCreationServiceImpl implements AiProductCreationService {
         } catch (Exception e) {
             log.error("AI product creation failed", e);
         }
+    }
+
+    /**
+     * Transforms a Cloudinary URL to a low-resolution version for AI analysis.
+     * Inserts w_600,q_auto transformation to reduce image size significantly.
+     * Original: https://res.cloudinary.com/cloud/image/upload/v123/file.jpg
+     * Result:   https://res.cloudinary.com/cloud/image/upload/w_600,q_auto/v123/file.jpg
+     */
+    private String toLowResUrl(String originalUrl) {
+        String marker = "/upload/";
+        int idx = originalUrl.indexOf(marker);
+        if (idx == -1) {
+            return originalUrl; // Not a standard Cloudinary URL, return as-is
+        }
+        int insertPos = idx + marker.length();
+        return originalUrl.substring(0, insertPos) + "w_600,q_auto/" + originalUrl.substring(insertPos);
     }
 }

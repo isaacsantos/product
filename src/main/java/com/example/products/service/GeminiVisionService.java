@@ -10,21 +10,19 @@ import com.google.genai.types.*;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
 @Slf4j
-public class GeminiServiceImpl implements GeminiService {
+public class GeminiVisionService implements AiVisionService {
 
     private final Client client;
     private final String model;
     private final Gson gson = new Gson();
 
-    public GeminiServiceImpl(GeminiProperties properties) {
+    public GeminiVisionService(GeminiProperties properties) {
         this.client = Client.builder().apiKey(properties.getApiKey()).build();
         this.model = properties.getModel();
     }
@@ -42,7 +40,6 @@ public class GeminiServiceImpl implements GeminiService {
                 .collect(Collectors.joining(", ", "[", "]"));
 
         parts.add(Part.fromText(buildPrompt(imageUrls.size(), tagList)));
-
         Content content = Content.fromParts(parts.toArray(new Part[0]));
 
         Schema imageIndicesSchema = Schema.builder()

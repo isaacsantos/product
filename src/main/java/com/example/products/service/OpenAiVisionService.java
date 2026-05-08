@@ -187,8 +187,11 @@ public class OpenAiVisionService implements AiVisionService {
                 colors, or arrangements) should be grouped together.
                 
                 2. For each product group, provide:
-                   - "name": A concise, commercial product name in Spanish.
-                   - "description": A brief product description in Spanish suitable for an e-commerce store.
+                   - "name": A concise, commercial product name in Spanish. Only name what you can clearly see in the image.
+                   - "description": A SHORT, factual product description in Spanish suitable for an e-commerce store (2-3 sentences max). \
+                ONLY describe what is VISUALLY CONFIRMED in the image. Do NOT assume or invent features, \
+                accessories, included items, or capabilities that are not clearly visible. \
+                If you only see a console, do NOT say it includes games or controllers unless they are visible in the image.
                    - "imageIndices": The 0-based indices of the images that belong to this product.
                    - "tagIds": The IDs of the tags that best categorize this product from the available tags list.
                 
@@ -199,6 +202,8 @@ public class OpenAiVisionService implements AiVisionService {
                 - Only use tag IDs from the provided list.
                 - If no tags match a product, return an empty tagIds array.
                 - Names and descriptions must be in Spanish.
+                - NEVER hallucinate or invent information. Only describe what you can see.
+                - Keep descriptions brief and factual. No marketing fluff.
                 """, imageCount, tagList, imageCount - 1);
     }
 }

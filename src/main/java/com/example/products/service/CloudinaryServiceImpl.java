@@ -37,13 +37,15 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         this.cloudinary = cloudinary;
     }
 
+    private static final Map<String, Object> UPLOAD_OPTIONS = ObjectUtils.asMap("angle", "exif");
+
     @Override
     public CloudinaryUploadResult upload(MultipartFile file) {
         if (!ALLOWED_TYPES.contains(file.getContentType())) {
             throw new InvalidImageTypeException(file.getContentType());
         }
         try {
-            Map result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+            Map result = cloudinary.uploader().upload(file.getBytes(), UPLOAD_OPTIONS);
             return new CloudinaryUploadResult(
                     (String) result.get("secure_url"),
                     (String) result.get("public_id")
@@ -59,7 +61,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             throw new InvalidImageTypeException(contentType);
         }
         try {
-            Map result = cloudinary.uploader().upload(bytes, ObjectUtils.emptyMap());
+            Map result = cloudinary.uploader().upload(bytes, UPLOAD_OPTIONS);
             return new CloudinaryUploadResult(
                     (String) result.get("secure_url"),
                     (String) result.get("public_id")

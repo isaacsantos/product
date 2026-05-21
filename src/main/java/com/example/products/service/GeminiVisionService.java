@@ -2,6 +2,8 @@ package com.example.products.service;
 
 import com.example.products.config.GeminiProperties;
 import com.example.products.model.AiClassifiedProduct;
+import com.example.products.model.Phase1Result;
+import com.example.products.model.Phase2Result;
 import com.example.products.model.TagResponse;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -11,9 +13,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Slf4j
 public class GeminiVisionService implements AiVisionService {
@@ -27,26 +29,211 @@ public class GeminiVisionService implements AiVisionService {
         this.model = properties.getModel();
     }
 
+    // Package-private constructor for testing
+    GeminiVisionService(Client client, String model) {
+        this.client = client;
+        this.model = model;
+    }
+
     @Override
     public List<AiClassifiedProduct> classifyImages(List<String> imageUrls, List<TagResponse> availableTags) {
+        // Phase 1: Vision-based product identification (propagates immediately on failure)
+        List<Phase1Result> phase1Results = executePhase1(imageUrls);
+
+        // Validate image index coverage
+        validatePhase1Coverage(phase1Results, imageUrls.size());
+
+        // Phase 2: Text-based description and tag assignment
+        List<String> productNames = phase1Results.stream()
+                .map(Phase1Result::getName)
+                .collect(Collectors.toList());
+
+        List<Phase2Result> phase2Results;
+        try {
+            phase2Results = executePhase2(productNames, availableTags);
+        } catch (Exception e) {
+            log.warn("Phase 2 failed. Phase 1 results were: {}", phase1Results, e);
+            throw e;
+        }
+
+        // Merge results
+        return mergeResults(phase1Results, phase2Results);
+    }
+
+    List<Phase1Result> executePhase1(List<String> imageUrls) {
         List<Part> parts = new ArrayList<>();
 
         for (int i = 0; i < imageUrls.size(); i++) {
             parts.add(Part.fromUri(imageUrls.get(i), "image/jpeg"));
         }
 
-        String tagList = availableTags.stream()
+        parts.add(Part.fromText(buildPhase1Prompt(imageUrls.size())));
+        Content content = Content.fromParts(parts.toArray(new Part[0]));
+
+        GenerateContentConfig config = GenerateContentConfig.builder()
+                .responseMimeType("application/json")
+                .responseSchema(buildPhase1Schema())
+                .build();
+
+        GenerateContentResponse response = client.models.generateContent(model, content, config);
+        String jsonResponse = response.text();
+        log.info("Gemini Phase 1 response: {}", jsonResponse);
+
+        return gson.fromJson(jsonResponse, new TypeToken<List<Phase1Result>>() {}.getType());
+    }
+
+    static void validatePhase1Coverage(List<Phase1Result> results, int imageCount) {
+        List<Integer> allIndices = results.stream()
+                .flatMap(r -> r.getImageIndices().stream())
+                .collect(Collectors.toList());
+
+        Set<Integer> expectedIndices = IntStream.range(0, imageCount)
+                .boxed()
+                .collect(Collectors.toSet());
+
+        // Check for out-of-range indices
+        List<Integer> outOfRange = allIndices.stream()
+                .filter(i -> i < 0 || i >= imageCount)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        // Check for missing indices
+        Set<Integer> presentIndices = new HashSet<>(allIndices);
+        List<Integer> missing = expectedIndices.stream()
+                .filter(i -> !presentIndices.contains(i))
+                .sorted()
+                .collect(Collectors.toList());
+
+        // Check for duplicate indices
+        Set<Integer> seen = new HashSet<>();
+        List<Integer> duplicates = allIndices.stream()
+                .filter(i -> !seen.add(i))
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        if (!outOfRange.isEmpty() || !missing.isEmpty() || !duplicates.isEmpty()) {
+            StringBuilder message = new StringBuilder("Phase 1 image index coverage validation failed:");
+            if (!missing.isEmpty()) {
+                message.append(" Missing indices: ").append(missing).append(".");
+            }
+            if (!duplicates.isEmpty()) {
+                message.append(" Duplicate indices: ").append(duplicates).append(".");
+            }
+            if (!outOfRange.isEmpty()) {
+                message.append(" Out-of-range indices: ").append(outOfRange).append(".");
+            }
+            throw new IllegalStateException(message.toString());
+        }
+    }
+
+    static List<AiClassifiedProduct> mergeResults(List<Phase1Result> phase1, List<Phase2Result> phase2) {
+        // Build a set of Phase 1 product names for quick lookup
+        Set<String> phase1Names = phase1.stream()
+                .map(Phase1Result::getName)
+                .collect(Collectors.toSet());
+
+        // Build a map of Phase 2 results keyed by name
+        Map<String, Phase2Result> phase2Map = new HashMap<>();
+        for (Phase2Result p2 : phase2) {
+            if (!phase1Names.contains(p2.getName())) {
+                log.warn("Phase 2 returned product '{}' with no matching Phase 1 entry. Ignoring.", p2.getName());
+            } else {
+                phase2Map.put(p2.getName(), p2);
+            }
+        }
+
+        // Iterate over Phase 1 results and merge
+        List<AiClassifiedProduct> merged = new ArrayList<>();
+        for (Phase1Result p1 : phase1) {
+            Phase2Result p2 = phase2Map.get(p1.getName());
+            if (p2 == null) {
+                throw new IllegalStateException(
+                        "Phase 1 product '" + p1.getName() + "' has no matching Phase 2 result.");
+            }
+            merged.add(AiClassifiedProduct.builder()
+                    .name(p1.getName())
+                    .description(p2.getDescription())
+                    .imageIndices(p1.getImageIndices())
+                    .tagIds(p2.getTagIds())
+                    .build());
+        }
+
+        return merged;
+    }
+
+    List<Phase2Result> executePhase2(List<String> productNames, List<TagResponse> tags) {
+        String tagListJson = tags.stream()
                 .map(t -> String.format("{\"id\": %d, \"name\": \"%s\"}", t.getId(), t.getName()))
                 .collect(Collectors.joining(", ", "[", "]"));
 
-        parts.add(Part.fromText(buildPrompt(imageUrls.size(), tagList)));
-        Content content = Content.fromParts(parts.toArray(new Part[0]));
+        String prompt = buildPhase2Prompt(productNames, tagListJson);
+        Content content = Content.fromParts(Part.fromText(prompt));
 
+        GenerateContentConfig config = GenerateContentConfig.builder()
+                .responseMimeType("application/json")
+                .responseSchema(buildPhase2Schema())
+                .build();
+
+        GenerateContentResponse response = client.models.generateContent(model, content, config);
+        String jsonResponse = response.text();
+        log.info("Gemini Phase 2 response: {}", jsonResponse);
+
+        return gson.fromJson(jsonResponse, new TypeToken<List<Phase2Result>>() {}.getType());
+    }
+
+    static String buildPhase2Prompt(List<String> productNames, String tagListJson) {
+        String productList = productNames.stream()
+                .map(name -> "- " + name)
+                .collect(Collectors.joining("\n"));
+
+        return String.format("""
+                You are a product catalog assistant. You will be given a list of product names and a list of available tags. \
+                Your task is to:
+                
+                1. For each product name, generate a brief, factual description in Spanish suitable for an e-commerce store \
+                (2-3 sentences max). ONLY describe what the product name implies. Do NOT invent features, accessories, or \
+                capabilities that are not evident from the name.
+                
+                2. For each product, assign the most relevant tag IDs from the available tags list.
+                
+                Product names:
+                %s
+                
+                Available tags: %s
+                
+                Important rules:
+                - Descriptions must be in Spanish.
+                - Keep descriptions brief and factual. No marketing fluff.
+                - Only use tag IDs from the provided list.
+                - If no tags match a product, return an empty tagIds array.
+                - Return one result per product name, preserving the exact product name as given.
+                """, productList, tagListJson);
+    }
+
+    static Schema buildPhase1Schema() {
         Schema imageIndicesSchema = Schema.builder()
                 .type(Type.Known.ARRAY)
                 .items(Schema.builder().type(Type.Known.INTEGER))
                 .build();
 
+        Schema productSchema = Schema.builder()
+                .type(Type.Known.OBJECT)
+                .properties(ImmutableMap.of(
+                        "name", Schema.builder().type(Type.Known.STRING).build(),
+                        "imageIndices", imageIndicesSchema
+                ))
+                .required(ImmutableList.of("name", "imageIndices"))
+                .build();
+
+        return Schema.builder()
+                .type(Type.Known.ARRAY)
+                .items(productSchema)
+                .build();
+    }
+
+    static Schema buildPhase2Schema() {
         Schema tagIdsSchema = Schema.builder()
                 .type(Type.Known.ARRAY)
                 .items(Schema.builder().type(Type.Known.INTEGER))
@@ -57,30 +244,18 @@ public class GeminiVisionService implements AiVisionService {
                 .properties(ImmutableMap.of(
                         "name", Schema.builder().type(Type.Known.STRING).build(),
                         "description", Schema.builder().type(Type.Known.STRING).build(),
-                        "imageIndices", imageIndicesSchema,
                         "tagIds", tagIdsSchema
                 ))
-                .required(ImmutableList.of("name", "description", "imageIndices", "tagIds"))
+                .required(ImmutableList.of("name", "description", "tagIds"))
                 .build();
 
-        Schema responseSchema = Schema.builder()
+        return Schema.builder()
                 .type(Type.Known.ARRAY)
                 .items(productSchema)
                 .build();
-
-        GenerateContentConfig config = GenerateContentConfig.builder()
-                .responseMimeType("application/json")
-                .responseSchema(responseSchema)
-                .build();
-
-        GenerateContentResponse response = client.models.generateContent(model, content, config);
-        String jsonResponse = response.text();
-        log.info("Gemini classification response: {}", jsonResponse);
-
-        return gson.fromJson(jsonResponse, new TypeToken<List<AiClassifiedProduct>>() {}.getType());
     }
 
-    private String buildPrompt(int imageCount, String tagList) {
+    static String buildPhase1Prompt(int imageCount) {
         return String.format("""
                 You are analyzing %d product images. Your task is to:
                 
@@ -89,22 +264,14 @@ public class GeminiVisionService implements AiVisionService {
                 
                 2. For each product group, provide:
                    - "name": A concise, commercial product name in Spanish. Only name what you can clearly see in the image.
-                   - "description": A SHORT, factual product description in Spanish suitable for an e-commerce store (2-3 sentences max). \
-                ONLY describe what is VISUALLY CONFIRMED in the image. Do NOT assume or invent features, \
-                accessories, included items, or capabilities that are not clearly visible. \
-                If you only see a console, do NOT say it includes games or controllers unless they are visible in the image.
                    - "imageIndices": The 0-based indices of the images that belong to this product.
-                   - "tagIds": The IDs of the tags that best categorize this product from the available tags list.
-                
-                Available tags: %s
                 
                 Important rules:
                 - Each image index (0 to %d) must appear in exactly one product group.
-                - Only use tag IDs from the provided list.
-                - If no tags match a product, return an empty tagIds array.
-                - Names and descriptions must be in Spanish.
-                - NEVER hallucinate or invent information. Only describe what you can see.
-                - Keep descriptions brief and factual. No marketing fluff.
-                """, imageCount, tagList, imageCount - 1);
+                - Product names must be in Spanish.
+                - NEVER hallucinate or invent information. Only name what you can clearly see.
+                """, imageCount, imageCount - 1);
     }
+
+
 }

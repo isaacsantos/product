@@ -90,7 +90,7 @@ class ProductServiceImplTest {
     @Test
     void findAll_returnsAllProductsMapped() {
         Product second = Product.builder().id(2L).name("Gadget").description(null).price(new BigDecimal("19.99")).build();
-        when(repository.findAll(any(PageRequest.class)))
+        when(repository.findByActiveTrue(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(product, second)));
 
         PageResponse<PublicProductResponse> result = service.findAll(0, 20, null);
@@ -104,7 +104,7 @@ class ProductServiceImplTest {
 
     @Test
     void findAll_returnsEmptyPageWhenNoProducts() {
-        when(repository.findAll(any(PageRequest.class)))
+        when(repository.findByActiveTrue(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of()));
 
         PageResponse<PublicProductResponse> result = service.findAll(0, 20, null);

@@ -141,17 +141,18 @@ class ProductActiveStatusPropertyTest {
     // -------------------------------------------------------------------------
 
     static Stream<Product> productsForPublicResponse() {
+        // Only active products can be retrieved via the public findById endpoint
         return Stream.of(
             Product.builder().id(1L).name("P1").price(new BigDecimal("1.00")).active(true).build(),
             Product.builder().id(2L).name("P2").price(new BigDecimal("2.00")).active(true).build(),
             Product.builder().id(3L).name("P3").price(new BigDecimal("3.00")).active(true).build(),
             Product.builder().id(4L).name("P4").price(new BigDecimal("4.00")).active(true).build(),
             Product.builder().id(5L).name("P5").price(new BigDecimal("5.00")).active(true).build(),
-            Product.builder().id(6L).name("P6").price(new BigDecimal("6.00")).active(false).build(),
-            Product.builder().id(7L).name("P7").price(new BigDecimal("7.00")).active(false).build(),
-            Product.builder().id(8L).name("P8").price(new BigDecimal("8.00")).active(false).build(),
-            Product.builder().id(9L).name("P9").price(new BigDecimal("9.00")).active(false).build(),
-            Product.builder().id(10L).name("P10").price(new BigDecimal("10.00")).active(false).build()
+            Product.builder().id(6L).name("P6").price(new BigDecimal("6.00")).active(true).build(),
+            Product.builder().id(7L).name("P7").price(new BigDecimal("7.00")).active(true).build(),
+            Product.builder().id(8L).name("P8").price(new BigDecimal("8.00")).active(true).build(),
+            Product.builder().id(9L).name("P9").price(new BigDecimal("9.00")).active(true).build(),
+            Product.builder().id(10L).name("P10").price(new BigDecimal("10.00")).active(true).build()
         );
     }
 

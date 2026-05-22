@@ -1,6 +1,8 @@
 package com.example.products.service;
 
 import com.example.products.model.*;
+import com.google.api.client.util.StringUtils;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -40,6 +42,8 @@ public class AiProductCreationServiceImpl implements AiProductCreationService {
             List<String> lowResUrls = imageUrls.stream()
                     .map(this::toLowResUrl)
                     .toList();
+
+            log.info("Log RES URLs: {}", String.join(StringUtils.LINE_SEPARATOR, lowResUrls));
 
             // 2. Get available tags
             List<TagResponse> availableTags = tagService.findAll();

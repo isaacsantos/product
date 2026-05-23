@@ -13,6 +13,11 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -61,10 +66,13 @@ public class GeminiVisionService implements AiVisionService {
     }
 
     List<Phase1Result> executePhase1(List<String> imageUrls) {
+        HttpClient httpClient = HttpClient.newHttpClient();
         List<Part> parts = new ArrayList<>();
 
         for (int i = 0; i < imageUrls.size(); i++) {
-            parts.add(Part.fromUri(imageUrls.get(i), "image/jpeg"));
+            byte[] imageBytes = downloadImage(httpClient, imageUrls.get(i));
+            String mimeType = guessMimeType(imageUrls.get(i));
+            parts.add(Part.fromBytes(imageBytes, mimeType));
         }
 
         parts.add(Part.fromText(buildPhase1Prompt(imageUrls.size())));
@@ -80,6 +88,31 @@ public class GeminiVisionService implements AiVisionService {
         log.info("Gemini Phase 1 response: {}", jsonResponse);
 
         return gson.fromJson(jsonResponse, new TypeToken<List<Phase1Result>>() {}.getType());
+    }
+
+    private byte[] downloadImage(HttpClient httpClient, String imageUrl) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(imageUrl))
+                    .GET()
+                    .build();
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Failed to download image from " + imageUrl + ". Status: " + response.statusCode());
+            }
+            return response.body();
+        } catch (IOException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Error downloading image from " + imageUrl, e);
+        }
+    }
+
+    private String guessMimeType(String url) {
+        String lower = url.toLowerCase();
+        if (lower.contains(".png")) return "image/png";
+        if (lower.contains(".webp")) return "image/webp";
+        if (lower.contains(".gif")) return "image/gif";
+        return "image/jpeg";
     }
 
     static void validatePhase1Coverage(List<Phase1Result> results, int imageCount) {

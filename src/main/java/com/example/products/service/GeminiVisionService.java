@@ -225,8 +225,8 @@ public class GeminiVisionService implements AiVisionService {
                 You are a product catalog assistant. You will be given a list of product names and a list of available tags. \
                 Your task is to:
                 
-                1. For each product name, generate a brief, factual description in Spanish suitable for an e-commerce store \
-                (2-3 sentences max). ONLY describe what the product name implies. Do NOT invent features, accessories, or \
+                1. For each product name, generate a brief description containing the synopsis in Spanish suitable for an e-commerce store \
+                (3-5 sentences max). ONLY describe what the product name implies. Do NOT invent features, accessories, or \
                 capabilities that are not evident from the name.
                 
                 2. For each product, assign the most relevant tag IDs from the available tags list.

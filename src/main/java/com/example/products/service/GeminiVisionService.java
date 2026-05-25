@@ -190,6 +190,7 @@ public class GeminiVisionService implements AiVisionService {
                     .description(p2.getDescription())
                     .imageIndices(p1.getImageIndices())
                     .tagIds(p2.getTagIds())
+                    .price(p2.getPrice())
                     .build());
         }
 
@@ -231,6 +232,13 @@ public class GeminiVisionService implements AiVisionService {
                 
                 2. For each product, assign the most relevant tag IDs from the available tags list.
                 
+                3. For each product, estimate its market price in MXN (Mexican Pesos). To do this:
+                   - Search for the product on online stores like eBay, Amazon, or similar marketplaces.
+                   - Find a reasonable average selling price in USD.
+                   - Convert the price to MXN using an approximate exchange rate of 17.5 MXN per 1 USD.
+                   - Return the final price in MXN as a number (no currency symbol).
+                   - If you cannot determine a price, estimate a reasonable price based on the product type.
+                
                 Product names:
                 %s
                 
@@ -242,6 +250,8 @@ public class GeminiVisionService implements AiVisionService {
                 - Only use tag IDs from the provided list.
                 - If no tags match a product, return an empty tagIds array.
                 - Return one result per product name, preserving the exact product name as given.
+                - The price must be in MXN (Mexican Pesos). Use approximate eBay/Amazon prices converted at ~17.5 MXN/USD.
+                - Price must be a positive number with up to 2 decimal places.
                 """, productList, tagListJson);
     }
 
@@ -277,9 +287,10 @@ public class GeminiVisionService implements AiVisionService {
                 .properties(ImmutableMap.of(
                         "name", Schema.builder().type(Type.Known.STRING).build(),
                         "description", Schema.builder().type(Type.Known.STRING).build(),
-                        "tagIds", tagIdsSchema
+                        "tagIds", tagIdsSchema,
+                        "price", Schema.builder().type(Type.Known.NUMBER).build()
                 ))
-                .required(ImmutableList.of("name", "description", "tagIds"))
+                .required(ImmutableList.of("name", "description", "tagIds", "price"))
                 .build();
 
         return Schema.builder()

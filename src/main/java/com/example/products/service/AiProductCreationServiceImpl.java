@@ -59,7 +59,7 @@ public class AiProductCreationServiceImpl implements AiProductCreationService {
                 ProductRequest productRequest = ProductRequest.builder()
                         .name(classified.getName())
                         .description(classified.getDescription())
-                        .price(null)
+                        .price(classified.getPrice())
                         .active(false)
                         .build();
 

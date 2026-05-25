@@ -7,6 +7,7 @@ import com.example.products.repository.ProductRepository;
 import com.example.products.repository.TagRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -147,7 +148,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageResponse<AdminProductResponse> findAllAdmin(int page, int size, Set<Long> tagIds, String search) {
-        PageRequest pageable = PageRequest.of(page, size);
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("active").ascending());
         boolean hasTags = tagIds != null && !tagIds.isEmpty();
         boolean hasSearch = search != null && !search.isBlank();
 

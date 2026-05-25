@@ -14,6 +14,8 @@ import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -190,7 +192,7 @@ public class GeminiVisionService implements AiVisionService {
                     .description(p2.getDescription())
                     .imageIndices(p1.getImageIndices())
                     .tagIds(p2.getTagIds())
-                    .price(p2.getPrice())
+                    .price(roundToNearest50(p2.getPrice()))
                     .build());
         }
 
@@ -236,8 +238,9 @@ public class GeminiVisionService implements AiVisionService {
                    - Search for the product on online stores like eBay, Amazon, or similar marketplaces.
                    - Find a reasonable average selling price in USD.
                    - Convert the price to MXN using an approximate exchange rate of 17.5 MXN per 1 USD.
-                   - Return the final price in MXN as a number (no currency symbol).
-                   - If you cannot determine a price, estimate a reasonable price based on the product type.
+                   - Round the final price to the nearest multiple of 50 (e.g. 1434 → 1400, 5555 → 5600, 1725 → 1750).
+                   - Return the final rounded price in MXN as a whole number (no decimals, no currency symbol).
+                   - If you cannot determine a price, estimate a reasonable price based on the product type and round it.
                 
                 Product names:
                 %s
@@ -251,7 +254,7 @@ public class GeminiVisionService implements AiVisionService {
                 - If no tags match a product, return an empty tagIds array.
                 - Return one result per product name, preserving the exact product name as given.
                 - The price must be in MXN (Mexican Pesos). Use approximate eBay/Amazon prices converted at ~17.5 MXN/USD.
-                - Price must be a positive number with up to 2 decimal places.
+                - Price must be a whole number rounded to the nearest multiple of 50 (no decimals).
                 """, productList, tagListJson);
     }
 
@@ -317,5 +320,16 @@ public class GeminiVisionService implements AiVisionService {
                 """, imageCount, imageCount - 1);
     }
 
+    /**
+     * Rounds a price to the nearest multiple of 50.
+     * Examples: 1434.56 → 1450, 5555.55 → 5550, 1725 → 1750, null → null
+     */
+    static BigDecimal roundToNearest50(BigDecimal price) {
+        if (price == null) {
+            return null;
+        }
+        long rounded = Math.round(price.doubleValue() / 50.0) * 50;
+        return BigDecimal.valueOf(rounded);
+    }
 
 }

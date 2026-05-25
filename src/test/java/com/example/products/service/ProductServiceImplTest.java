@@ -1,6 +1,8 @@
 package com.example.products.service;
 
 import com.example.products.exception.ProductNotFoundException;
+import com.example.products.model.AdminProductResponse;
+import com.example.products.model.ConditionType;
 import com.example.products.model.ImageResponse;
 import com.example.products.model.PageResponse;
 import com.example.products.model.Product;
@@ -13,6 +15,7 @@ import com.example.products.repository.TagRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -220,5 +223,185 @@ class ProductServiceImplTest {
         PublicProductResponse response = service.findById(1L);
 
         assertThat(response.getImages()).isEmpty();
+    }
+
+    // --- createAdmin condition field mapping ---
+
+    @Test
+    void createAdmin_mapsProvidedConditionTypeAndRatingToResponse() {
+        ProductRequest conditionRequest = ProductRequest.builder()
+                .name("Used Guitar")
+                .description("A vintage guitar")
+                .price(new BigDecimal("250.00"))
+                .conditionType(ConditionType.NEW)
+                .conditionRating(8)
+                .build();
+
+        Product savedProduct = Product.builder()
+                .id(2L)
+                .name("Used Guitar")
+                .description("A vintage guitar")
+                .price(new BigDecimal("250.00"))
+                .conditionType(ConditionType.NEW)
+                .conditionRating(8)
+                .build();
+
+        when(repository.save(any(Product.class))).thenReturn(savedProduct);
+
+        AdminProductResponse response = service.createAdmin(conditionRequest);
+
+        assertThat(response.getConditionType()).isEqualTo(ConditionType.NEW);
+        assertThat(response.getConditionRating()).isEqualTo(8);
+    }
+
+    @Test
+    void createAdmin_persistsProvidedConditionFieldsOnEntity() {
+        ProductRequest conditionRequest = ProductRequest.builder()
+                .name("Used Guitar")
+                .description("A vintage guitar")
+                .price(new BigDecimal("250.00"))
+                .conditionType(ConditionType.USED)
+                .conditionRating(3)
+                .build();
+
+        Product savedProduct = Product.builder()
+                .id(2L)
+                .name("Used Guitar")
+                .description("A vintage guitar")
+                .price(new BigDecimal("250.00"))
+                .conditionType(ConditionType.USED)
+                .conditionRating(3)
+                .build();
+
+        when(repository.save(any(Product.class))).thenReturn(savedProduct);
+
+        service.createAdmin(conditionRequest);
+
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(repository).save(captor.capture());
+        Product persisted = captor.getValue();
+        assertThat(persisted.getConditionType()).isEqualTo(ConditionType.USED);
+        assertThat(persisted.getConditionRating()).isEqualTo(3);
+    }
+
+    @Test
+    void createAdmin_appliesDefaultsWhenConditionFieldsAreNull() {
+        ProductRequest nullConditionRequest = ProductRequest.builder()
+                .name("Default Product")
+                .description("No condition specified")
+                .price(new BigDecimal("50.00"))
+                .conditionType(null)
+                .conditionRating(null)
+                .build();
+
+        Product savedProduct = Product.builder()
+                .id(3L)
+                .name("Default Product")
+                .description("No condition specified")
+                .price(new BigDecimal("50.00"))
+                .conditionType(ConditionType.USED)
+                .conditionRating(10)
+                .build();
+
+        when(repository.save(any(Product.class))).thenReturn(savedProduct);
+
+        AdminProductResponse response = service.createAdmin(nullConditionRequest);
+
+        assertThat(response.getConditionType()).isEqualTo(ConditionType.USED);
+        assertThat(response.getConditionRating()).isEqualTo(10);
+
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(repository).save(captor.capture());
+        Product persisted = captor.getValue();
+        assertThat(persisted.getConditionType()).isEqualTo(ConditionType.USED);
+        assertThat(persisted.getConditionRating()).isEqualTo(10);
+    }
+
+    // --- updateAdmin condition field mapping ---
+
+    @Test
+    void updateAdmin_updatesConditionFieldsWhenProvided() {
+        Product existingProduct = Product.builder()
+                .id(1L)
+                .name("Widget")
+                .description("A useful widget")
+                .price(new BigDecimal("9.99"))
+                .conditionType(ConditionType.USED)
+                .conditionRating(5)
+                .build();
+
+        ProductRequest updateRequest = ProductRequest.builder()
+                .name("Widget")
+                .description("A useful widget")
+                .price(new BigDecimal("9.99"))
+                .conditionType(ConditionType.NEW)
+                .conditionRating(9)
+                .build();
+
+        Product updatedProduct = Product.builder()
+                .id(1L)
+                .name("Widget")
+                .description("A useful widget")
+                .price(new BigDecimal("9.99"))
+                .conditionType(ConditionType.NEW)
+                .conditionRating(9)
+                .build();
+
+        when(repository.findById(1L)).thenReturn(Optional.of(existingProduct));
+        when(repository.save(any(Product.class))).thenReturn(updatedProduct);
+
+        AdminProductResponse response = service.updateAdmin(1L, updateRequest);
+
+        assertThat(response.getConditionType()).isEqualTo(ConditionType.NEW);
+        assertThat(response.getConditionRating()).isEqualTo(9);
+
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(repository).save(captor.capture());
+        Product persisted = captor.getValue();
+        assertThat(persisted.getConditionType()).isEqualTo(ConditionType.NEW);
+        assertThat(persisted.getConditionRating()).isEqualTo(9);
+    }
+
+    @Test
+    void updateAdmin_preservesExistingConditionFieldsWhenRequestValuesAreNull() {
+        Product existingProduct = Product.builder()
+                .id(1L)
+                .name("Widget")
+                .description("A useful widget")
+                .price(new BigDecimal("9.99"))
+                .conditionType(ConditionType.NEW)
+                .conditionRating(7)
+                .build();
+
+        ProductRequest updateRequest = ProductRequest.builder()
+                .name("Widget Updated")
+                .description("Updated description")
+                .price(new BigDecimal("12.99"))
+                .conditionType(null)
+                .conditionRating(null)
+                .build();
+
+        Product updatedProduct = Product.builder()
+                .id(1L)
+                .name("Widget Updated")
+                .description("Updated description")
+                .price(new BigDecimal("12.99"))
+                .conditionType(ConditionType.NEW)
+                .conditionRating(7)
+                .build();
+
+        when(repository.findById(1L)).thenReturn(Optional.of(existingProduct));
+        when(repository.save(any(Product.class))).thenReturn(updatedProduct);
+
+        AdminProductResponse response = service.updateAdmin(1L, updateRequest);
+
+        assertThat(response.getConditionType()).isEqualTo(ConditionType.NEW);
+        assertThat(response.getConditionRating()).isEqualTo(7);
+
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(repository).save(captor.capture());
+        Product persisted = captor.getValue();
+        assertThat(persisted.getConditionType()).isEqualTo(ConditionType.NEW);
+        assertThat(persisted.getConditionRating()).isEqualTo(7);
     }
 }

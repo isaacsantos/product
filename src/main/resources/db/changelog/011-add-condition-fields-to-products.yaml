@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-add-condition-fields-to-products
+      author: developer
+      changes:
+        - addColumn:
+            tableName: products
+            columns:
+              - column:
+                  name: condition_type
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: true
+                  defaultValue: 'USED'
+              - column:
+                  name: condition_rating
+                  type: INTEGER
+                  defaultValueNumeric: 10

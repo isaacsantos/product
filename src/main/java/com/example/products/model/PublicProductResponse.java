@@ -16,6 +16,8 @@ public class PublicProductResponse {
     private String name;
     private String description;
     private BigDecimal price;
+    private ConditionType conditionType;
+    private Integer conditionRating;
 
     @Builder.Default
     private List<ImageResponse> images = new ArrayList<>();

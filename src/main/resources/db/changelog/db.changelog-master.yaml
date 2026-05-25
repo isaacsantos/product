@@ -29,3 +29,6 @@ databaseChangeLog:
   - include:
       file: 010-add-type-to-tags.yaml
       relativeToChangelogFile: true
+  - include:
+      file: 011-add-condition-fields-to-products.yaml
+      relativeToChangelogFile: true

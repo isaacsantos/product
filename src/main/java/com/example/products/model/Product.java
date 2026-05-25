@@ -45,4 +45,13 @@ public class Product {
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "condition_type")
+    @Builder.Default
+    private ConditionType conditionType = ConditionType.USED;
+
+    @Column(name = "condition_rating")
+    @Builder.Default
+    private Integer conditionRating = 10;
 }

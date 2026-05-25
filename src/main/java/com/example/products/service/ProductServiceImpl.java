@@ -36,6 +36,8 @@ public class ProductServiceImpl implements ProductService {
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .active(request.isActive())
+                .conditionType(request.getConditionType() != null ? request.getConditionType() : ConditionType.USED)
+                .conditionRating(request.getConditionRating() != null ? request.getConditionRating() : 10)
                 .build();
         return toResponse(repository.save(product));
     }
@@ -47,6 +49,12 @@ public class ProductServiceImpl implements ProductService {
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
+        if (request.getConditionType() != null) {
+            product.setConditionType(request.getConditionType());
+        }
+        if (request.getConditionRating() != null) {
+            product.setConditionRating(request.getConditionRating());
+        }
         return toResponse(repository.save(product));
     }
 
@@ -126,6 +134,8 @@ public class ProductServiceImpl implements ProductService {
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .active(request.isActive())
+                .conditionType(request.getConditionType() != null ? request.getConditionType() : ConditionType.USED)
+                .conditionRating(request.getConditionRating() != null ? request.getConditionRating() : 10)
                 .build();
         return toAdminResponse(repository.save(product));
     }
@@ -181,6 +191,12 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setActive(request.isActive());
+        if (request.getConditionType() != null) {
+            product.setConditionType(request.getConditionType());
+        }
+        if (request.getConditionRating() != null) {
+            product.setConditionRating(request.getConditionRating());
+        }
         return toAdminResponse(repository.save(product));
     }
 
@@ -220,6 +236,8 @@ public class ProductServiceImpl implements ProductService {
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
+                .conditionType(product.getConditionType())
+                .conditionRating(product.getConditionRating())
                 .images(mapImages(product))
                 .tags(mapTags(product))
                 .active(product.isActive())
@@ -232,6 +250,8 @@ public class ProductServiceImpl implements ProductService {
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
+                .conditionType(product.getConditionType())
+                .conditionRating(product.getConditionRating())
                 .images(mapImages(product))
                 .tags(mapTags(product))
                 .build();
@@ -243,6 +263,8 @@ public class ProductServiceImpl implements ProductService {
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
+                .conditionType(product.getConditionType())
+                .conditionRating(product.getConditionRating())
                 .images(mapImages(product))
                 .tags(mapTags(product))
                 .build();

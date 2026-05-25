@@ -22,8 +22,9 @@ public class PublicProductController {
     public ResponseEntity<PageResponse<PublicProductResponse>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) Set<Long> tagIds) {
-        return ResponseEntity.ok(productService.findAll(page, size, tagIds));
+            @RequestParam(required = false) Set<Long> tagIds,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(productService.findAll(page, size, tagIds, search));
     }
 
     @GetMapping("/{id}")

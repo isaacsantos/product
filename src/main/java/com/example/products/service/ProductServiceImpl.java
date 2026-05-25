@@ -81,10 +81,26 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageResponse<PublicProductResponse> findAll(int page, int size, Set<Long> tagIds) {
+        return findAll(page, size, tagIds, null);
+    }
+
+    @Override
+    public PageResponse<PublicProductResponse> findAll(int page, int size, Set<Long> tagIds, String search) {
         PageRequest pageable = PageRequest.of(page, size);
-        Page<Product> result = (tagIds == null || tagIds.isEmpty())
-                ? repository.findByActiveTrue(pageable)
-                : repository.findActiveByTagIds(tagIds, pageable);
+        boolean hasTags = tagIds != null && !tagIds.isEmpty();
+        boolean hasSearch = search != null && !search.isBlank();
+
+        Page<Product> result;
+        if (hasTags && hasSearch) {
+            result = repository.findActiveByTagIdsAndNameContainingIgnoreCase(tagIds, search, pageable);
+        } else if (hasTags) {
+            result = repository.findActiveByTagIds(tagIds, pageable);
+        } else if (hasSearch) {
+            result = repository.findByActiveTrueAndNameContainingIgnoreCase(search, pageable);
+        } else {
+            result = repository.findByActiveTrue(pageable);
+        }
+
         List<PublicProductResponse> content = result.getContent().stream()
                 .map(this::toPublicResponse)
                 .toList();
@@ -116,10 +132,26 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageResponse<AdminProductResponse> findAllAdmin(int page, int size, Set<Long> tagIds) {
+        return findAllAdmin(page, size, tagIds, null);
+    }
+
+    @Override
+    public PageResponse<AdminProductResponse> findAllAdmin(int page, int size, Set<Long> tagIds, String search) {
         PageRequest pageable = PageRequest.of(page, size);
-        Page<Product> result = (tagIds == null || tagIds.isEmpty())
-                ? repository.findAll(pageable)
-                : repository.findByTagIds(tagIds, pageable);
+        boolean hasTags = tagIds != null && !tagIds.isEmpty();
+        boolean hasSearch = search != null && !search.isBlank();
+
+        Page<Product> result;
+        if (hasTags && hasSearch) {
+            result = repository.findByTagIdsAndNameContainingIgnoreCase(tagIds, search, pageable);
+        } else if (hasTags) {
+            result = repository.findByTagIds(tagIds, pageable);
+        } else if (hasSearch) {
+            result = repository.findByNameContainingIgnoreCase(search, pageable);
+        } else {
+            result = repository.findAll(pageable);
+        }
+
         List<AdminProductResponse> content = result.getContent().stream()
                 .map(this::toAdminResponse)
                 .toList();

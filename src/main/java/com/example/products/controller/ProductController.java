@@ -33,8 +33,9 @@ public class ProductController {
     public ResponseEntity<PageResponse<AdminProductResponse>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) Set<Long> tagIds) {
-        return ResponseEntity.ok(productService.findAllAdmin(page, size, tagIds));
+            @RequestParam(required = false) Set<Long> tagIds,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(productService.findAllAdmin(page, size, tagIds, search));
     }
 
     @GetMapping("/{id}")

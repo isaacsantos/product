@@ -18,4 +18,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT DISTINCT p FROM Product p JOIN p.tags t WHERE t.id IN :tagIds AND p.active = true")
     Page<Product> findActiveByTagIds(@Param("tagIds") Collection<Long> tagIds, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Product> findByNameContainingIgnoreCase(@Param("search") String search, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.active = true AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Product> findByActiveTrueAndNameContainingIgnoreCase(@Param("search") String search, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Product p JOIN p.tags t WHERE t.id IN :tagIds AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Product> findByTagIdsAndNameContainingIgnoreCase(@Param("tagIds") Collection<Long> tagIds, @Param("search") String search, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Product p JOIN p.tags t WHERE t.id IN :tagIds AND p.active = true AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Product> findActiveByTagIdsAndNameContainingIgnoreCase(@Param("tagIds") Collection<Long> tagIds, @Param("search") String search, Pageable pageable);
 }

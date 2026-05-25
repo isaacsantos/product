@@ -24,10 +24,14 @@ public interface ProductService {
 
     PageResponse<PublicProductResponse> findAll(int page, int size, Set<Long> tagIds);
 
+    PageResponse<PublicProductResponse> findAll(int page, int size, Set<Long> tagIds, String search);
+
     // Admin endpoints — return AdminProductResponse (includes active field)
     AdminProductResponse createAdmin(ProductRequest request);
 
     PageResponse<AdminProductResponse> findAllAdmin(int page, int size, Set<Long> tagIds);
+
+    PageResponse<AdminProductResponse> findAllAdmin(int page, int size, Set<Long> tagIds, String search);
 
     AdminProductResponse findByIdAdmin(Long id);
 

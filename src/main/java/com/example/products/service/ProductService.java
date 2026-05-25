@@ -1,6 +1,7 @@
 package com.example.products.service;
 
 import com.example.products.model.AdminProductResponse;
+import com.example.products.model.ConditionType;
 import com.example.products.model.PageResponse;
 import com.example.products.model.ProductRequest;
 import com.example.products.model.ProductResponse;
@@ -26,12 +27,16 @@ public interface ProductService {
 
     PageResponse<PublicProductResponse> findAll(int page, int size, Set<Long> tagIds, String search);
 
+    PageResponse<PublicProductResponse> findAll(int page, int size, Set<Long> tagIds, String search, ConditionType conditionType);
+
     // Admin endpoints — return AdminProductResponse (includes active field)
     AdminProductResponse createAdmin(ProductRequest request);
 
     PageResponse<AdminProductResponse> findAllAdmin(int page, int size, Set<Long> tagIds);
 
     PageResponse<AdminProductResponse> findAllAdmin(int page, int size, Set<Long> tagIds, String search);
+
+    PageResponse<AdminProductResponse> findAllAdmin(int page, int size, Set<Long> tagIds, String search, ConditionType conditionType);
 
     AdminProductResponse findByIdAdmin(Long id);
 

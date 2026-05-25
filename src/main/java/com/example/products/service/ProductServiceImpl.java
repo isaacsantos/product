@@ -95,12 +95,26 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageResponse<PublicProductResponse> findAll(int page, int size, Set<Long> tagIds, String search) {
+        return findAll(page, size, tagIds, search, null);
+    }
+
+    @Override
+    public PageResponse<PublicProductResponse> findAll(int page, int size, Set<Long> tagIds, String search, ConditionType conditionType) {
         PageRequest pageable = PageRequest.of(page, size);
         boolean hasTags = tagIds != null && !tagIds.isEmpty();
         boolean hasSearch = search != null && !search.isBlank();
+        boolean hasCondition = conditionType != null;
 
         Page<Product> result;
-        if (hasTags && hasSearch) {
+        if (hasTags && hasSearch && hasCondition) {
+            result = repository.findActiveByTagIdsAndConditionTypeAndNameContainingIgnoreCase(tagIds, conditionType, search, pageable);
+        } else if (hasTags && hasCondition) {
+            result = repository.findActiveByTagIdsAndConditionType(tagIds, conditionType, pageable);
+        } else if (hasSearch && hasCondition) {
+            result = repository.findByActiveTrueAndConditionTypeAndNameContainingIgnoreCase(conditionType, search, pageable);
+        } else if (hasCondition) {
+            result = repository.findByActiveTrueAndConditionType(conditionType, pageable);
+        } else if (hasTags && hasSearch) {
             result = repository.findActiveByTagIdsAndNameContainingIgnoreCase(tagIds, search, pageable);
         } else if (hasTags) {
             result = repository.findActiveByTagIds(tagIds, pageable);
@@ -148,12 +162,26 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageResponse<AdminProductResponse> findAllAdmin(int page, int size, Set<Long> tagIds, String search) {
+        return findAllAdmin(page, size, tagIds, search, null);
+    }
+
+    @Override
+    public PageResponse<AdminProductResponse> findAllAdmin(int page, int size, Set<Long> tagIds, String search, ConditionType conditionType) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("active").ascending());
         boolean hasTags = tagIds != null && !tagIds.isEmpty();
         boolean hasSearch = search != null && !search.isBlank();
+        boolean hasCondition = conditionType != null;
 
         Page<Product> result;
-        if (hasTags && hasSearch) {
+        if (hasTags && hasSearch && hasCondition) {
+            result = repository.findByTagIdsAndConditionTypeAndNameContainingIgnoreCase(tagIds, conditionType, search, pageable);
+        } else if (hasTags && hasCondition) {
+            result = repository.findByTagIdsAndConditionType(tagIds, conditionType, pageable);
+        } else if (hasSearch && hasCondition) {
+            result = repository.findByConditionTypeAndNameContainingIgnoreCase(conditionType, search, pageable);
+        } else if (hasCondition) {
+            result = repository.findByConditionType(conditionType, pageable);
+        } else if (hasTags && hasSearch) {
             result = repository.findByTagIdsAndNameContainingIgnoreCase(tagIds, search, pageable);
         } else if (hasTags) {
             result = repository.findByTagIds(tagIds, pageable);

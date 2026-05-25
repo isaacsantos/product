@@ -30,4 +30,31 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT DISTINCT p FROM Product p JOIN p.tags t WHERE t.id IN :tagIds AND p.active = true AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Product> findActiveByTagIdsAndNameContainingIgnoreCase(@Param("tagIds") Collection<Long> tagIds, @Param("search") String search, Pageable pageable);
+
+    // --- Condition filter queries (admin — all products) ---
+
+    Page<Product> findByConditionType(ConditionType conditionType, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.conditionType = :condition AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Product> findByConditionTypeAndNameContainingIgnoreCase(@Param("condition") ConditionType conditionType, @Param("search") String search, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Product p JOIN p.tags t WHERE t.id IN :tagIds AND p.conditionType = :condition")
+    Page<Product> findByTagIdsAndConditionType(@Param("tagIds") Collection<Long> tagIds, @Param("condition") ConditionType conditionType, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Product p JOIN p.tags t WHERE t.id IN :tagIds AND p.conditionType = :condition AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Product> findByTagIdsAndConditionTypeAndNameContainingIgnoreCase(@Param("tagIds") Collection<Long> tagIds, @Param("condition") ConditionType conditionType, @Param("search") String search, Pageable pageable);
+
+    // --- Condition filter queries (public — active only) ---
+
+    @Query("SELECT p FROM Product p WHERE p.active = true AND p.conditionType = :condition")
+    Page<Product> findByActiveTrueAndConditionType(@Param("condition") ConditionType conditionType, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.active = true AND p.conditionType = :condition AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Product> findByActiveTrueAndConditionTypeAndNameContainingIgnoreCase(@Param("condition") ConditionType conditionType, @Param("search") String search, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Product p JOIN p.tags t WHERE t.id IN :tagIds AND p.active = true AND p.conditionType = :condition")
+    Page<Product> findActiveByTagIdsAndConditionType(@Param("tagIds") Collection<Long> tagIds, @Param("condition") ConditionType conditionType, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Product p JOIN p.tags t WHERE t.id IN :tagIds AND p.active = true AND p.conditionType = :condition AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Product> findActiveByTagIdsAndConditionTypeAndNameContainingIgnoreCase(@Param("tagIds") Collection<Long> tagIds, @Param("condition") ConditionType conditionType, @Param("search") String search, Pageable pageable);
 }

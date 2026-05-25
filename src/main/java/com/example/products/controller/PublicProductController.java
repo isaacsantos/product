@@ -1,5 +1,6 @@
 package com.example.products.controller;
 
+import com.example.products.model.ConditionType;
 import com.example.products.model.PageResponse;
 import com.example.products.model.PublicProductResponse;
 import com.example.products.service.ProductService;
@@ -23,8 +24,9 @@ public class PublicProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) Set<Long> tagIds,
-            @RequestParam(required = false) String search) {
-        return ResponseEntity.ok(productService.findAll(page, size, tagIds, search));
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) ConditionType conditionType) {
+        return ResponseEntity.ok(productService.findAll(page, size, tagIds, search, conditionType));
     }
 
     @GetMapping("/{id}")

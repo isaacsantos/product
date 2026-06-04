@@ -319,6 +319,10 @@ public class GeminiVisionService implements AiVisionService {
                 - Each image index (0 to %d) must appear in exactly one product group.
                 - Product names must be in Spanish.
                 - NEVER hallucinate or invent information. Only name what you can clearly see.
+                - A single image may contain multiple items that all belong to the SAME product. For example, \
+                a photo showing a videogame cartridge, its box, artwork, and collectible coins together represents \
+                ONE single product (e.g. "Pokemon Emerald"), NOT multiple separate products. Treat all items in \
+                such images as components of a single product and assign them to the same product group.
                 """, imageCount, imageCount - 1);
     }
 

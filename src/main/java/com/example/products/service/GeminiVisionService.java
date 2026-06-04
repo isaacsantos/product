@@ -228,7 +228,7 @@ public class GeminiVisionService implements AiVisionService {
                 You are a product catalog assistant. You will be given a list of product names and a list of available tags. \
                 Your task is to:
                 
-                1. For each product name, generate a brief description containing the synopsis in Spanish suitable for an e-commerce store \
+                1. For each product name, we will get the description by finding the synopsis in Spanish of the product \
                 (3-5 sentences max). ONLY describe what the product name implies. Do NOT invent features, accessories, or \
                 capabilities that are not evident from the name.
                 
@@ -249,6 +249,8 @@ public class GeminiVisionService implements AiVisionService {
                 
                 Important rules:
                 - Descriptions must be in Spanish.
+                - Descriptions normally are the synopsis of the product videogame.
+                - Descriptions must generated based on the synopsis of the product videogame..
                 - Keep descriptions brief and factual. No marketing fluff.
                 - Only use tag IDs from the provided list.
                 - If no tags match a product, return an empty tagIds array.

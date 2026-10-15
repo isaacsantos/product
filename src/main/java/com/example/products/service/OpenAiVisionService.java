@@ -6,11 +6,11 @@ import com.example.products.model.TagResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,14 +31,14 @@ public class OpenAiVisionService implements AiVisionService {
     }
 
     @Override
-    public List<AiClassifiedProduct> classifyImages(List<String> imageUrls, List<TagResponse> availableTags) {
+    public AiClassifiedProduct classifyProduct(List<String> imageUrls, List<TagResponse> availableTags) {
         String tagList = availableTags.stream()
                 .map(t -> String.format("{\"id\": %d, \"name\": \"%s\"}", t.getId(), t.getName()))
                 .collect(Collectors.joining(", ", "[", "]"));
 
         JsonObject requestBody = buildRequest(imageUrls, tagList);
 
-        log.info("Sending {} images to OpenAI for classification", imageUrls.size());
+        log.info("Sending {} images to OpenAI for single-product classification", imageUrls.size());
 
         String responseBody = restClient.post()
                 .uri(OPENAI_API_URL)
@@ -56,10 +56,18 @@ public class OpenAiVisionService implements AiVisionService {
 
         log.info("OpenAI classification response: {}", content);
 
-        // The structured output wraps in {"products": [...]}
-        JsonObject parsed = gson.fromJson(content, JsonObject.class);
-        return gson.fromJson(parsed.getAsJsonArray("products"),
-                new TypeToken<List<AiClassifiedProduct>>() {}.getType());
+        AiClassifiedProduct product = gson.fromJson(content, AiClassifiedProduct.class);
+        product.setPrice(roundToNearest50(product.getPrice()));
+        return product;
+    }
+
+    /** Rounds a price to the nearest multiple of 50. null-safe. */
+    static BigDecimal roundToNearest50(BigDecimal price) {
+        if (price == null) {
+            return null;
+        }
+        long rounded = Math.round(price.doubleValue() / 50.0) * 50;
+        return BigDecimal.valueOf(rounded);
     }
 
     private JsonObject buildRequest(List<String> imageUrls, String tagList) {
@@ -122,40 +130,23 @@ public class OpenAiVisionService implements AiVisionService {
         jsonSchema.addProperty("name", "product_classification");
         jsonSchema.addProperty("strict", true);
 
+        // Single product object: { name, description, tagIds, price }
         JsonObject schema = new JsonObject();
         schema.addProperty("type", "object");
 
         JsonObject properties = new JsonObject();
+        properties.add("name", typeString());
+        properties.add("description", typeString());
+        properties.add("tagIds", typeArrayOfIntegers());
+        properties.add("price", typeNumber());
+        schema.add("properties", properties);
 
-        // products array
-        JsonObject productsArray = new JsonObject();
-        productsArray.addProperty("type", "array");
-
-        JsonObject itemSchema = new JsonObject();
-        itemSchema.addProperty("type", "object");
-
-        JsonObject itemProperties = new JsonObject();
-        itemProperties.add("name", typeString());
-        itemProperties.add("description", typeString());
-        itemProperties.add("imageIndices", typeArrayOfIntegers());
-        itemProperties.add("tagIds", typeArrayOfIntegers());
-
-        itemSchema.add("properties", itemProperties);
         JsonArray required = new JsonArray();
         required.add("name");
         required.add("description");
-        required.add("imageIndices");
         required.add("tagIds");
-        itemSchema.add("required", required);
-        itemSchema.addProperty("additionalProperties", false);
-
-        productsArray.add("items", itemSchema);
-        properties.add("products", productsArray);
-
-        schema.add("properties", properties);
-        JsonArray topRequired = new JsonArray();
-        topRequired.add("products");
-        schema.add("required", topRequired);
+        required.add("price");
+        schema.add("required", required);
         schema.addProperty("additionalProperties", false);
 
         jsonSchema.add("schema", schema);
@@ -170,6 +161,12 @@ public class OpenAiVisionService implements AiVisionService {
         return obj;
     }
 
+    private JsonObject typeNumber() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("type", "number");
+        return obj;
+    }
+
     private JsonObject typeArrayOfIntegers() {
         JsonObject obj = new JsonObject();
         obj.addProperty("type", "array");
@@ -181,29 +178,30 @@ public class OpenAiVisionService implements AiVisionService {
 
     private String buildPrompt(int imageCount, String tagList) {
         return String.format("""
-                You are analyzing %d product images. Your task is to:
-                
-                1. GROUP the images by product. Images that show the same product (possibly from different angles, \
-                colors, or arrangements) should be grouped together.
-                
-                2. For each product group, provide:
-                   - "name": A concise, commercial product name in Spanish. Only name what you can clearly see in the image.
-                   - "description": A SHORT, factual product description in Spanish suitable for an e-commerce store (2-3 sentences max). \
-                ONLY describe what is VISUALLY CONFIRMED in the image. Do NOT assume or invent features, \
-                accessories, included items, or capabilities that are not clearly visible. \
-                If you only see a console, do NOT say it includes games or controllers unless they are visible in the image.
-                   - "imageIndices": The 0-based indices of the images that belong to this product.
-                   - "tagIds": The IDs of the tags that best categorize this product from the available tags list.
-                
+                You are a product catalog assistant for an online videogame/collectibles store in Mexico. \
+                You are given %d image(s) that ALL show the SAME single product (possibly from different angles, \
+                sides, or with its box/manual/accessories). Treat every image as the same one product — never split \
+                them into multiple products.
+
+                Return a single JSON object describing that one product with:
+                   - "name": A concise, commercial product name in Spanish. Only name what you can clearly see.
+                   - "description": A SHORT product description in Spanish (3-5 sentences max) suitable for e-commerce. \
+                For a videogame this is normally the game's synopsis. ONLY describe what the product is; do NOT invent \
+                features, accessories, or included items that are not evident from the images or the product's identity.
+                   - "tagIds": The IDs of the tags that best categorize this product, chosen ONLY from the available tags list.
+                   - "price": The estimated market price in MXN (Mexican Pesos) for the Mexican resale market. Base it on \
+                typical Mercado Libre México selling prices (you may cross-check eBay at ~17.5 MXN/USD). This is a \
+                best-effort estimate from your knowledge — do not claim to have browsed. Return a whole number in MXN \
+                (no decimals, no currency symbol), rounded to the nearest multiple of 50.
+
                 Available tags: %s
-                
+
                 Important rules:
-                - Each image index (0 to %d) must appear in exactly one product group.
-                - Only use tag IDs from the provided list.
-                - If no tags match a product, return an empty tagIds array.
-                - Names and descriptions must be in Spanish.
-                - NEVER hallucinate or invent information. Only describe what you can see.
-                - Keep descriptions brief and factual. No marketing fluff.
-                """, imageCount, tagList, imageCount - 1);
+                - Name and description must be in Spanish.
+                - Only use tag IDs from the provided list. If none match, return an empty array.
+                - NEVER hallucinate or invent information. Only describe what you can see / what the product is.
+                - Keep the description brief and factual. No marketing fluff.
+                - price must be a whole number in MXN rounded to the nearest multiple of 50.
+                """, imageCount, tagList);
     }
 }

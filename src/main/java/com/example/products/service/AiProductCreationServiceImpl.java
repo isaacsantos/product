@@ -25,11 +25,11 @@ public class AiProductCreationServiceImpl implements AiProductCreationService {
     @Override
     @Async
     @Transactional
-    public void createProductsFromImages(List<InMemoryFile> files) {
+    public void createProductFromImages(List<InMemoryFile> files) {
         try {
-            log.info("Starting async AI product creation for {} images", files.size());
+            log.info("Starting async AI single-product creation for {} images", files.size());
 
-            // 1. Upload all images to Cloudinary
+            // 1. Upload all images to Cloudinary — they all belong to ONE product
             List<CloudinaryUploadResult> uploadResults = files.stream()
                     .map(f -> cloudinaryService.upload(f.getBytes(), f.getContentType()))
                     .toList();
@@ -43,40 +43,35 @@ public class AiProductCreationServiceImpl implements AiProductCreationService {
                     .map(this::toLowResUrl)
                     .toList();
 
-            log.info("Log RES URLs: {}", String.join(StringUtils.LINE_SEPARATOR, lowResUrls));
+            log.info("Low-res URLs: {}", String.join(StringUtils.LINE_SEPARATOR, lowResUrls));
 
             // 2. Get available tags
             List<TagResponse> availableTags = tagService.findAll();
 
-            // 3. Ask AI to classify images (using low-res versions)
-            log.info("Classifying {} images with AI vision service", imageUrls.size());
-            List<AiClassifiedProduct> classifiedProducts = aiVisionService.classifyImages(lowResUrls, availableTags);
+            // 3. Ask AI to classify the images as a single product (using low-res versions)
+            log.info("Classifying {} images as a single product with AI vision service", imageUrls.size());
+            AiClassifiedProduct classified = aiVisionService.classifyProduct(lowResUrls, availableTags);
 
-            // 4. Create products as INACTIVE with price = null
-            log.info("Creating {} products from AI classification", classifiedProducts.size());
+            // 4. Create the product as INACTIVE with the estimated price pre-filled for review
+            log.info("Creating product '{}' from AI classification", classified.getName());
 
-            for (AiClassifiedProduct classified : classifiedProducts) {
-                ProductRequest productRequest = ProductRequest.builder()
-                        .name(classified.getName())
-                        .description(classified.getDescription())
-                        .price(classified.getPrice())
-                        .active(false)
-                        .build();
+            ProductRequest productRequest = ProductRequest.builder()
+                    .name(classified.getName())
+                    .description(classified.getDescription())
+                    .price(classified.getPrice())
+                    .active(false)
+                    .build();
 
-                AdminProductResponse product = productService.createAdmin(productRequest);
+            AdminProductResponse product = productService.createAdmin(productRequest);
 
-                List<String> productImageUrls = classified.getImageIndices().stream()
-                        .map(imageUrls::get)
-                        .toList();
+            // All uploaded images belong to this single product
+            productImageService.addImages(product.getId(), new ImageRequest(imageUrls));
 
-                productImageService.addImages(product.getId(), new ImageRequest(productImageUrls));
-
-                if (classified.getTagIds() != null && !classified.getTagIds().isEmpty()) {
-                    productService.setTagsAdmin(product.getId(), new HashSet<>(classified.getTagIds()));
-                }
+            if (classified.getTagIds() != null && !classified.getTagIds().isEmpty()) {
+                productService.setTagsAdmin(product.getId(), new HashSet<>(classified.getTagIds()));
             }
 
-            log.info("AI product creation completed: {} products created", classifiedProducts.size());
+            log.info("AI product creation completed: product id {} created", product.getId());
         } catch (Exception e) {
             log.error("AI product creation failed", e);
         }

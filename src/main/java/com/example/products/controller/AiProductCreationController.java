@@ -25,7 +25,7 @@ public class AiProductCreationController {
 
     @PostMapping(value = "/ai-create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<?> createProductsFromImages(@RequestParam("files") List<MultipartFile> files) {
+    public ResponseEntity<?> createProductFromImages(@RequestParam("files") List<MultipartFile> files) {
         if (files == null || files.isEmpty()) {
             return badRequest("At least one image file is required");
         }
@@ -47,10 +47,10 @@ public class AiProductCreationController {
             return badRequest("Failed to read uploaded files: " + e.getMessage());
         }
 
-        aiProductCreationService.createProductsFromImages(inMemoryFiles);
+        aiProductCreationService.createProductFromImages(inMemoryFiles);
 
         return ResponseEntity.accepted().body(Map.of(
-                "message", "Processing started. Products will be created in the background as inactive.",
+                "message", "Processing started. The product will be created in the background as inactive.",
                 "totalImages", files.size()
         ));
     }

@@ -30,6 +30,7 @@
         <java.version>17</java.version>
         <testcontainers.version>1.21.3</testcontainers.version>
         <springdoc.version>3.0.1</springdoc.version>
+        <oracle-jdbc.version>23.9.0.25.07</oracle-jdbc.version>
     </properties>
     <dependencies>
         <dependency>
@@ -51,6 +52,14 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Oracle JDBC + wallet (ADB) support; ojdbc11-production bundles oraclepki/osdt jars -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11-production</artifactId>
+            <version>${oracle-jdbc.version}</version>
+            <type>pom</type>
             <scope>runtime</scope>
         </dependency>
         <dependency>

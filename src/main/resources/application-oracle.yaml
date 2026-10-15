@@ -1,0 +1,24 @@
+# Oracle Autonomous Database (ADB) profile — wallet-based mTLS connection.
+# Activate with SPRING_PROFILES_ACTIVE=oracle
+#
+# Expected environment:
+#   DB_URL=jdbc:oracle:thin:@duraludon_tp?TNS_ADMIN=/app/wallet
+#   DB_USERNAME=ADMIN
+#   DB_PASSWORD=<admin password>
+# In containers/VM the wallet is provided via ORACLE_WALLET_BASE64 and unpacked to TNS_ADMIN.
+spring:
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      # ADB Always Free caps simultaneous sessions (30); keep the pool modest.
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    properties:
+      hibernate:
+        jdbc:
+          # ADB default is read-committed; avoid LOB streaming issues with CLOB.
+          lob:
+            non_contextual_creation: true

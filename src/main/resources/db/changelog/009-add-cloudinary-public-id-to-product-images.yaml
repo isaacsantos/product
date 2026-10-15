@@ -8,6 +8,6 @@ databaseChangeLog:
             columns:
               - column:
                   name: cloudinary_public_id
-                  type: TEXT
+                  type: CLOB
                   constraints:
                     nullable: true

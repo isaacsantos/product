@@ -12,7 +12,6 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: none
@@ -21,13 +20,15 @@ spring:
 
 security:
   cors:
+    # Browser Origin headers are scheme+host[:port] only — no trailing slash, no path.
+    # Entries with a trailing slash never match, so keep this list to bare origins.
     allowed-origins:
       - "http://localhost:5173"
       - "https://flower-store-cnik.onrender.com"
-      - "https://eljardindecasablanca.shop/"
       - "https://eljardindecasablanca.shop"
       - "https://game-store-58h9.onrender.com"
-      - "https://game-store-58h9.onrender.com/"
+      - "https://zackretrostore.com"
+      - "https://www.zackretrostore.com"
 
 
 cloudinary:

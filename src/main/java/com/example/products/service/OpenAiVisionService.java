@@ -185,18 +185,23 @@ public class OpenAiVisionService implements AiVisionService {
 
                 Return a single JSON object describing that one product with:
                    - "name": A concise, commercial product name in Spanish. Only name what you can clearly see.
-                   - "description": A product description in Spanish (español de México), written as a few short natural \
-                paragraphs (not a bulleted list), structured in this exact order:
-                       a) HISTORIA: brief synopsis of the game's story/premise (2-3 sentences).
-                       b) CONTENIDO: ONLY the physical items you can actually SEE in the images that are part of the \
-                product (e.g. cartucho, disco, caja/estuche, instructivo, folleto de seguridad, inserto). List only \
-                what is visible. Do NOT count gameplay screenshots or a console/hardware shown only for reference as \
-                included items. If you only see the cartridge, say it includes only the cartridge.
-                       c) CONSOLA: the specific console/system where THIS game is played.
-                       d) CLASIFICACIÓN ESRB: the game's ESRB rating if known (say "aproximada" if uncertain).
-                       e) GÉNERO: the game's genre(s).
-                       f) REGIÓN: the region of this copy (NTSC-U, NTSC-J, PAL o Región Libre) if determinable; \
-                otherwise state it is not specified.
+                   - "description": A product description in Spanish (español de México) using a LIGHT text format \
+                (NOT HTML) with: section headings on their own line starting with "## ", bullet lines starting with \
+                "- ", metadata lines "**Etiqueta:** valor", and a blank line between sections. It MUST contain exactly \
+                these three sections in this order:
+                       ## Historia
+                       brief synopsis of the game's story/premise (2-3 sentences, plain paragraph).
+                       ## Contenido
+                       one "- " bullet per physical item VISIBLE in the images and part of the product (e.g. \
+                "- Cartucho", "- Caja original", "- Instructivo", "- Folleto de seguridad"). Do NOT count gameplay \
+                screenshots or a console/hardware shown only for reference. If you only see the cartridge, output just \
+                "- Cartucho".
+                       ## Detalles
+                       exactly these four lines, each on its own line:
+                       **Consola:** the console/system where THIS game is played
+                       **Clasificación ESRB:** the rating if known ("(aproximada)" if uncertain)
+                       **Género:** the genre(s)
+                       **Región:** NTSC-U, NTSC-J, PAL o Región Libre (or "No especificada")
                    - "tagIds": The IDs of the tags that best categorize this product, chosen ONLY from the available \
                 tags list. Prefer the matching Console, ESRB, Genre, and Region tags consistent with the description.
                    - "price": The estimated market price in MXN (Mexican Pesos) for the Mexican resale market. Base it on \
@@ -208,9 +213,11 @@ public class OpenAiVisionService implements AiVisionService {
 
                 Important rules:
                 - Name and the ENTIRE description must be in Spanish (español de México).
-                - The description must follow the a-f structure (historia, contenido, consola, ESRB, género, región).
-                - For CONTENIDO, only list physical items visible in the images; NEVER count gameplay screenshots or a \
-                console shown for context as included items.
+                - The description must use the exact light-text format with headings "## Historia", "## Contenido", \
+                "## Detalles". Do NOT output HTML tags of any kind.
+                - "## Contenido" must be "- " bullet lines; only physical items visible in the images; NEVER count \
+                gameplay screenshots or a console shown for context.
+                - "## Detalles" must contain exactly the four "**Etiqueta:** valor" lines.
                 - Only use tag IDs from the provided list. If none match, return an empty array.
                 - NEVER hallucinate or invent information. Only describe what you can see / what the product is.
                 - Keep it factual and concise. No marketing fluff.

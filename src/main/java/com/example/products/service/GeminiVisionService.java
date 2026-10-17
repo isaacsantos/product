@@ -125,29 +125,31 @@ public class GeminiVisionService implements AiVisionService {
                 1. "name": A concise, commercial product name in Spanish. Only name what you can clearly see across \
                 the images. Do NOT invent variants or editions you cannot see.
 
-                2. "description": A product description written in Spanish (español de México). It MUST be structured \
-                in the following order, as a few short natural paragraphs (not a bulleted list):
+                2. "description": A product description written in Spanish (español de México), using a LIGHT text \
+                format (NOT HTML) with these exact markers so the storefront can render sections:
+                   - Section headings start with "## " on their own line.
+                   - Bullet lines start with "- ".
+                   - Metadata lines use "**Etiqueta:** valor".
+                   - Separate sections with a blank line.
 
-                   a) HISTORIA: A brief synopsis of the game's story/premise (2-3 sentences).
+                   The description MUST contain exactly these sections, in this order and with these exact headings:
 
-                   b) CONTENIDO (lo que incluye el producto): Describe ONLY the physical items you can actually SEE in \
-                   the images that are part of this product — for example: cartucho, disco, caja/estuche, instructivo \
-                   (manual de instrucciones), folleto de seguridad, inserto, mapa, etc. List only what is visible. \
-                   IMPORTANT EXCLUSIONS: do NOT list as included anything that is only shown for reference/context — \
-                   specifically, screenshots of gameplay and any console/hardware shown to indicate where the game is \
-                   played are NOT part of the product and must NOT be listed as included. If you only see the cartridge, \
-                   say it includes only the cartridge.
+                   ## Historia
+                   A brief synopsis of the game's story/premise (2-3 sentences, plain paragraph).
 
-                   c) CONSOLA: State the specific console/system on which THIS game is played (e.g. "Se juega en \
-                   Game Boy Advance").
+                   ## Contenido
+                   One "- " bullet per physical item you can actually SEE in the images that is part of this product \
+                   (e.g. "- Cartucho", "- Caja original", "- Instructivo", "- Folleto de seguridad", "- Inserto"). \
+                   List ONLY what is visible. IMPORTANT EXCLUSIONS: do NOT list screenshots of gameplay, nor any \
+                   console/hardware shown only to indicate where the game is played — those are NOT part of the product. \
+                   If you only see the cartridge, output a single bullet "- Cartucho".
 
-                   d) CLASIFICACIÓN ESRB: State the game's ESRB rating if known for this title (e.g. "Clasificación \
-                   ESRB: E (Everyone)"). If you are not certain of the exact rating, say it is approximate.
-
-                   e) GÉNERO: State the game's genre(s) (e.g. "Género: RPG / Aventura").
-
-                   f) REGIÓN: State the region of this copy if determinable from the images or packaging (NTSC-U, \
-                   NTSC-J, PAL, o Región Libre). If it cannot be determined, say the region is not specified.
+                   ## Detalles
+                   Exactly these four metadata lines (each on its own line, in this order):
+                   **Consola:** the specific console/system where THIS game is played
+                   **Clasificación ESRB:** the rating if known (add "(aproximada)" if uncertain)
+                   **Género:** the genre(s)
+                   **Región:** NTSC-U, NTSC-J, PAL o Región Libre (or "No especificada" if it cannot be determined)
 
                 3. "tagIds": The IDs of the tags that best categorize this product, chosen ONLY from the available \
                 tags list. Prefer selecting the matching Console, ESRB, Genre, and Region tags consistent with the \
@@ -165,9 +167,12 @@ public class GeminiVisionService implements AiVisionService {
 
                 Important rules:
                 - Name and the ENTIRE description must be in Spanish (español de México).
-                - The description must follow the a-f structure above (historia, contenido, consola, ESRB, género, región).
-                - For CONTENIDO, only list physical items visible in the images; NEVER count gameplay screenshots or a \
-                console shown for context as included items.
+                - The description must use the exact light-text format and the three headings: "## Historia", \
+                "## Contenido", "## Detalles". Do NOT output HTML tags of any kind.
+                - "## Contenido" must be bullet lines ("- "); only list physical items visible in the images; NEVER \
+                count gameplay screenshots or a console shown for context as included items.
+                - "## Detalles" must contain exactly the four "**Etiqueta:** valor" lines (Consola, Clasificación ESRB, \
+                Género, Región).
                 - Keep it factual and concise. No marketing fluff.
                 - NEVER hallucinate. Only describe what the images and the product's identity support.
                 - Only use tag IDs from the provided list.

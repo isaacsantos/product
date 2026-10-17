@@ -125,12 +125,33 @@ public class GeminiVisionService implements AiVisionService {
                 1. "name": A concise, commercial product name in Spanish. Only name what you can clearly see across \
                 the images. Do NOT invent variants or editions you cannot see.
 
-                2. "description": A SHORT product description in Spanish (3-5 sentences max). For a videogame, this is \
-                normally the game's synopsis. ONLY describe what the product is; do NOT invent features, accessories, \
-                or included items that are not evident from the images or the product's identity.
+                2. "description": A product description written in Spanish (español de México). It MUST be structured \
+                in the following order, as a few short natural paragraphs (not a bulleted list):
+
+                   a) HISTORIA: A brief synopsis of the game's story/premise (2-3 sentences).
+
+                   b) CONTENIDO (lo que incluye el producto): Describe ONLY the physical items you can actually SEE in \
+                   the images that are part of this product — for example: cartucho, disco, caja/estuche, instructivo \
+                   (manual de instrucciones), folleto de seguridad, inserto, mapa, etc. List only what is visible. \
+                   IMPORTANT EXCLUSIONS: do NOT list as included anything that is only shown for reference/context — \
+                   specifically, screenshots of gameplay and any console/hardware shown to indicate where the game is \
+                   played are NOT part of the product and must NOT be listed as included. If you only see the cartridge, \
+                   say it includes only the cartridge.
+
+                   c) CONSOLA: State the specific console/system on which THIS game is played (e.g. "Se juega en \
+                   Game Boy Advance").
+
+                   d) CLASIFICACIÓN ESRB: State the game's ESRB rating if known for this title (e.g. "Clasificación \
+                   ESRB: E (Everyone)"). If you are not certain of the exact rating, say it is approximate.
+
+                   e) GÉNERO: State the game's genre(s) (e.g. "Género: RPG / Aventura").
+
+                   f) REGIÓN: State the region of this copy if determinable from the images or packaging (NTSC-U, \
+                   NTSC-J, PAL, o Región Libre). If it cannot be determined, say the region is not specified.
 
                 3. "tagIds": The IDs of the tags that best categorize this product, chosen ONLY from the available \
-                tags list. If none match, return an empty array.
+                tags list. Prefer selecting the matching Console, ESRB, Genre, and Region tags consistent with the \
+                description. If none match, return an empty array.
 
                 4. "price": Estimate the product's market price in MXN (Mexican Pesos) for the Mexican resale market. \
                 Base the estimate on what this product typically sells for on Mercado Libre México (the dominant \
@@ -143,8 +164,11 @@ public class GeminiVisionService implements AiVisionService {
                 Available tags: %s
 
                 Important rules:
-                - Name and description must be in Spanish.
-                - Keep the description brief and factual. No marketing fluff.
+                - Name and the ENTIRE description must be in Spanish (español de México).
+                - The description must follow the a-f structure above (historia, contenido, consola, ESRB, género, región).
+                - For CONTENIDO, only list physical items visible in the images; NEVER count gameplay screenshots or a \
+                console shown for context as included items.
+                - Keep it factual and concise. No marketing fluff.
                 - NEVER hallucinate. Only describe what the images and the product's identity support.
                 - Only use tag IDs from the provided list.
                 - Price must be a whole number in MXN rounded to the nearest multiple of 50.

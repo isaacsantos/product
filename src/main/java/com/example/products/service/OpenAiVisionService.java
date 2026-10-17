@@ -185,10 +185,20 @@ public class OpenAiVisionService implements AiVisionService {
 
                 Return a single JSON object describing that one product with:
                    - "name": A concise, commercial product name in Spanish. Only name what you can clearly see.
-                   - "description": A SHORT product description in Spanish (3-5 sentences max) suitable for e-commerce. \
-                For a videogame this is normally the game's synopsis. ONLY describe what the product is; do NOT invent \
-                features, accessories, or included items that are not evident from the images or the product's identity.
-                   - "tagIds": The IDs of the tags that best categorize this product, chosen ONLY from the available tags list.
+                   - "description": A product description in Spanish (español de México), written as a few short natural \
+                paragraphs (not a bulleted list), structured in this exact order:
+                       a) HISTORIA: brief synopsis of the game's story/premise (2-3 sentences).
+                       b) CONTENIDO: ONLY the physical items you can actually SEE in the images that are part of the \
+                product (e.g. cartucho, disco, caja/estuche, instructivo, folleto de seguridad, inserto). List only \
+                what is visible. Do NOT count gameplay screenshots or a console/hardware shown only for reference as \
+                included items. If you only see the cartridge, say it includes only the cartridge.
+                       c) CONSOLA: the specific console/system where THIS game is played.
+                       d) CLASIFICACIÓN ESRB: the game's ESRB rating if known (say "aproximada" if uncertain).
+                       e) GÉNERO: the game's genre(s).
+                       f) REGIÓN: the region of this copy (NTSC-U, NTSC-J, PAL o Región Libre) if determinable; \
+                otherwise state it is not specified.
+                   - "tagIds": The IDs of the tags that best categorize this product, chosen ONLY from the available \
+                tags list. Prefer the matching Console, ESRB, Genre, and Region tags consistent with the description.
                    - "price": The estimated market price in MXN (Mexican Pesos) for the Mexican resale market. Base it on \
                 typical Mercado Libre México selling prices (you may cross-check eBay at ~17.5 MXN/USD). This is a \
                 best-effort estimate from your knowledge — do not claim to have browsed. Return a whole number in MXN \
@@ -197,10 +207,13 @@ public class OpenAiVisionService implements AiVisionService {
                 Available tags: %s
 
                 Important rules:
-                - Name and description must be in Spanish.
+                - Name and the ENTIRE description must be in Spanish (español de México).
+                - The description must follow the a-f structure (historia, contenido, consola, ESRB, género, región).
+                - For CONTENIDO, only list physical items visible in the images; NEVER count gameplay screenshots or a \
+                console shown for context as included items.
                 - Only use tag IDs from the provided list. If none match, return an empty array.
                 - NEVER hallucinate or invent information. Only describe what you can see / what the product is.
-                - Keep the description brief and factual. No marketing fluff.
+                - Keep it factual and concise. No marketing fluff.
                 - price must be a whole number in MXN rounded to the nearest multiple of 50.
                 """, imageCount, tagList);
     }

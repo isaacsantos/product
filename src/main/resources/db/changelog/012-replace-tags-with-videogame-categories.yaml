@@ -1,0 +1,105 @@
+databaseChangeLog:
+  # Remove the legacy flower-store tags (Mamá, Novia, ...) — they do not apply to a
+  # videogame store. Clear join rows first to respect the FK, then the tags.
+  - changeSet:
+      id: 012-clear-legacy-tags
+      author: kiro
+      changes:
+        - delete:
+            tableName: product_tag
+        - delete:
+            tableName: tags
+
+  # Insert the videogame-store tag taxonomy. The `type` column groups tags into
+  # categories (Console, ESRB, Brand, Genre, Condition, Region).
+  - changeSet:
+      id: 012-insert-videogame-tags
+      author: kiro
+      changes:
+        # ---------------- Console ----------------
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Nintendo Entertainment System (NES)" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Super Nintendo (SNES)" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Nintendo 64" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Nintendo GameCube" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Nintendo Wii" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Nintendo Wii U" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Nintendo Switch" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Game Boy" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Game Boy Color" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Game Boy Advance" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Nintendo DS" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Nintendo 3DS" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "PlayStation 1" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "PlayStation 2" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "PlayStation 3" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "PlayStation 4" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "PlayStation 5" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "PlayStation Portable (PSP)" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "PlayStation Vita" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Xbox" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Xbox 360" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Xbox One" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Xbox Series X|S" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Sega Genesis / Mega Drive" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Sega Saturn" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Sega Dreamcast" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Sega Game Gear" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Atari 2600" } }, { column: { name: type, value: "Console" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "PC" } }, { column: { name: type, value: "Console" } } ] }
+
+        # ---------------- ESRB ----------------
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Everyone (E)" } }, { column: { name: type, value: "ESRB" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Everyone 10+ (E10+)" } }, { column: { name: type, value: "ESRB" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Teen (T)" } }, { column: { name: type, value: "ESRB" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Mature 17+ (M)" } }, { column: { name: type, value: "ESRB" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Adults Only 18+ (AO)" } }, { column: { name: type, value: "ESRB" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Rating Pending (RP)" } }, { column: { name: type, value: "ESRB" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Early Childhood (EC)" } }, { column: { name: type, value: "ESRB" } } ] }
+
+        # ---------------- Brand ----------------
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Nintendo" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Sony" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Microsoft" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Sega" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Atari" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Capcom" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Konami" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Square Enix" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Bandai Namco" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Electronic Arts (EA)" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Ubisoft" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Activision" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Rockstar Games" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Bethesda" } }, { column: { name: type, value: "Brand" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "SNK" } }, { column: { name: type, value: "Brand" } } ] }
+
+        # ---------------- Genre ----------------
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Acción" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Aventura" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "RPG" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Plataformas" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Disparos (Shooter)" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Pelea" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Deportes" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Carreras" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Estrategia" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Simulación" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Puzzle" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Terror" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Mundo Abierto" } }, { column: { name: type, value: "Genre" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Familiar" } }, { column: { name: type, value: "Genre" } } ] }
+
+        # ---------------- Condition ----------------
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Nuevo / Sellado" } }, { column: { name: type, value: "Condition" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Completo en Caja (CIB)" } }, { column: { name: type, value: "Condition" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Solo Cartucho / Disco" } }, { column: { name: type, value: "Condition" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Usado - Como Nuevo" } }, { column: { name: type, value: "Condition" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Usado - Buen Estado" } }, { column: { name: type, value: "Condition" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Usado - Aceptable" } }, { column: { name: type, value: "Condition" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Para Refacciones" } }, { column: { name: type, value: "Condition" } } ] }
+
+        # ---------------- Region ----------------
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "NTSC-U (Norteamérica)" } }, { column: { name: type, value: "Region" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "NTSC-J (Japón)" } }, { column: { name: type, value: "Region" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "PAL (Europa)" } }, { column: { name: type, value: "Region" } } ] }
+        - insert: { tableName: tags, columns: [ { column: { name: name, value: "Región Libre" } }, { column: { name: type, value: "Region" } } ] }
